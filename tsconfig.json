@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "lib": [
+      "ESNext",
+      "ESNext.AsyncIterable",
+      "DOM",
+    ],
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "strict": true,
+    "noEmit": false,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": [
+        "./*"
+      ],
+      "@/*": [
+        "./*"
+      ],
+      "*": [
+        "./types/*"
+      ]
+    },
+    "types": [
+      "node",
+      "jest"
+    ]
+  },
+  "include": [
+    "src/**/*", "types",
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "bin",
+    "jest.config.js",
+    "webpack*"
+  ]
+}

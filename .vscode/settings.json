@@ -1,0 +1,46 @@
+{
+    "editor.autoClosingBrackets": "beforeWhitespace",
+    "editor.autoClosingQuotes": "beforeWhitespace",
+    "editor.autoSurround": "brackets",
+    "prettier.disableLanguages": [
+      "markdown"
+     ],
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      }
+    },
+    "[json]": {
+      "editor.tabSize": 4,
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      }
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true, 
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      }
+    },
+    "eslint.run": "onType",
+    // "eslint.nodePath": "/node_modules/",
+    // "eslint.options": {​​​​​ "configFile": "/.eslintrc.js" },​​​​​
+    "markdown-preview-enhanced.enableExtendedTableSyntax": true,
+    "markdown-preview-enhanced.enableScriptExecution": true,
+    "markdown-preview-enhanced.previewTheme": "github-light.css",
+    "markdown.preview.breaks": true,
+    "markdown.extension.orderedList.marker": "one",
+    "markdown.extension.orderedList.autoRenumber": false,
+    "markdown.extension.syntax.decorations": false,
+    "markdown.extension.tableFormatter.enabled": false,
+    "[markdown]": {
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+        "editor.tabSize": 4,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.markdownlint": true
+      }
+    }
+}

@@ -1,0 +1,7 @@
+/.gitignore
+/.eslintrc.js
+/jest.config.js
+/dist/*.js
+/bin
+/webpack*
+/types/*
