@@ -1,3 +1,4 @@
+import { accessTokenInitialize } from './accessTokenInitialize';
 import { Calc } from './calc';
 import { pullArticle } from './pullArticle';
 import packageJson from '../package.json';
@@ -27,7 +28,7 @@ Command:
 `;
 
   private commandMap = new Map<CommandType, () => number | Promise<number>>([
-    ['init', () => new Calc().add(1, 2)],
+    ['init', () => new accessTokenInitialize().exec()],
     ['pull:article', () => new pullArticle().exec()],
     ['new:article', () => new Calc().add(1, 2)],
     ['post:article', () => new Calc().add(1, 2)],
