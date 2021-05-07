@@ -1,4 +1,5 @@
 import axios from 'axios';
+import emoji from 'node-emoji';
 import fs from 'fs';
 import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
@@ -6,6 +7,7 @@ import { QiitaPost } from '@/types/qiita';
 export class pullArticle {
   async exec(): Promise<number> {
     try {
+      console.log('fetching article ... ');
       await axios
         .get<QiitaPost[]>('https://qiita.com/api/v2/authenticated_user/items', {
           headers: {
@@ -13,7 +15,6 @@ export class pullArticle {
           },
         })
         .then((res) => {
-          console.log('then');
           // check res data
           const checkResData = res.data;
           fs.writeFile(
@@ -26,6 +27,7 @@ export class pullArticle {
             }
           );
           // make .md file from res data
+          console.log('------------------------------------------');
           res.data.map((post) => {
             console.log(post.id + ': ' + post.title);
             const dir: string = 'articles/' + post.title + '/';
@@ -47,6 +49,13 @@ url: ${String(post.url)}
             // not sync for article
             fs.appendFileSync(filePath, post.body);
           });
+          console.log('------------------------------------------');
+          // 処理完了メッセージ
+          console.log(
+            emoji.get('sparkles') +
+              ' Article fetching completed. ' +
+              emoji.get('sparkles')
+          );
           return 0;
         });
     } catch (e) {

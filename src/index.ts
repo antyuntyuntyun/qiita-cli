@@ -40,6 +40,8 @@ Command:
   async run() {
     // command-line-usageを利用しようとすると以下エラーを吐いてしまう
     // TypeError: Cannot read property 'arrayify' of undefined
+
+    console.log('🐥 qiita cli\n');
     const exec = this.commandMap.get(process.argv[2]);
     if (exec != null) {
       const ret = await exec();
