@@ -16,6 +16,11 @@ npm run build
 npm link
 ```
 
+### node-emoji
+
+emoji一覧
+<https://raw.githubusercontent.com/omnidan/node-emoji/master/lib/emoji.json>
+
 ### VScodeによるホットロード
 
 `.vscode/tasks.json` でwatch設定をしているので, Ctr + Shift + B でwatch状態に設定可能
