@@ -45,11 +45,7 @@ url: ${String(post.url)}
             // sync writ for frontMatter
             fs.writeFileSync(filePath, frontMatter);
             // not sync for article
-            fs.appendFile(filePath, post.body, (err) => {
-              if (err) {
-                console.error(err);
-              }
-            });
+            fs.appendFileSync(filePath, post.body);
           });
           return 0;
         });
