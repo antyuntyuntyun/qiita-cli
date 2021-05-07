@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "inquirer": "^8.0.0",
     "open": "^8.0.7",
     "sleep-promise": "^9.1.0"
   },
