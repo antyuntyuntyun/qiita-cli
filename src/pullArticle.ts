@@ -52,9 +52,11 @@ url: ${String(post.url)}
           console.log('------------------------------------------');
           // 処理完了メッセージ
           console.log(
-            emoji.get('sparkles') +
+            '\n' +
+              emoji.get('sparkles') +
               ' Article fetching completed. ' +
-              emoji.get('sparkles')
+              emoji.get('sparkles') +
+              '\n'
           );
           return 0;
         });
