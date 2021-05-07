@@ -1,5 +1,24 @@
 # qiita-cli
+
 qiita記事管理用のTypeScript製cli
+
+## 開発環境設定
+
+```bash
+# node仮想環境の用意
+nodenv install 14.16.0
+# パッケージインストール
+npm install
+# ビルド
+npm run build
+# package.jsonのbin記載コマンド'qiita'が使えるように
+# シンボリックリンクを生成
+npm link
+```
+
+### VScodeによるホットロード
+
+`.vscode/tasks.json` でwatch設定をしているので, Ctr + Shift + B でwatch状態に設定可能
 
 ## 参考
 
