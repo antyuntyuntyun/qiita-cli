@@ -1,5 +1,6 @@
 import { accessTokenInitialize } from './accessTokenInitialize';
 import { Calc } from './calc';
+import emoji from 'node-emoji';
 import { pullArticle } from './pullArticle';
 import packageJson from '../package.json';
 
@@ -14,8 +15,9 @@ type CommandType =
 
 class Main {
   // command-line-usageがエラーが出て使えないので以下の実装
-  private readonly mainUsage: string = `  
-🐥 qiita cli
+  private readonly mainUsage: string =
+    emoji.get('hatched_chick') +
+    ` qiita cli
 
 Command:
   qiita init           qiitaとの接続設定. 初回のみ実行
@@ -49,11 +51,13 @@ Command:
         console.log(this.mainUsage);
       } else if (process.argv[2] === '--version' || process.argv[2] === '-v') {
         // version
-        console.log('\n🐥 qiita cli');
+        console.log('\n' + emoji.get('hatched_chick') + 'qiita cli');
         console.log('version: ' + packageJson.version + '\n');
       } else {
         // other wrong args
-        console.log('\n😞 wrong args\nfollow as below\n');
+        console.log(
+          '\n' + emoji.get('disappointed') + ' wrong args\nfollow as below\n'
+        );
         console.log(this.mainUsage);
       }
       process.exit(1);
