@@ -39,7 +39,8 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "open": "^8.0.7"
+    "open": "^8.0.7",
+    "sleep-promise": "^9.1.0"
   },
   "bin": {
     "qiita": "./bin/qiita.js"
