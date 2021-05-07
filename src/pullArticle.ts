@@ -47,7 +47,7 @@ url: ${String(post.url)}
             // not sync for article
             fs.appendFile(filePath, post.body, (err) => {
               if (err) {
-                console.log(err);
+                console.error(err);
               }
             });
           });
