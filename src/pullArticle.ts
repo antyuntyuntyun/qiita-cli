@@ -11,6 +11,7 @@ export class pullArticle {
       await axios
         .get<QiitaPost[]>('https://qiita.com/api/v2/authenticated_user/items', {
           headers: {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             Authorization: `Bearer ${qiitaSetting.token}`,
           },
         })
@@ -61,7 +62,9 @@ url: ${String(post.url)}
           return 0;
         });
     } catch (e) {
-      console.error('error in get Qiita posts: ');
+      const red = '\u001b[31m';
+      const reset = '\u001b[0m';
+      console.error('\n' + red + 'error in get Qiita posts: ' + reset + '\n');
       console.error(e);
       return -1;
     }

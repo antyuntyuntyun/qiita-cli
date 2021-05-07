@@ -42,6 +42,11 @@ export class accessTokenInitialize {
       const filePath = `${qiitaDir}/qiita.json`;
       fs.writeFileSync(filePath, token);
       fs.appendFileSync(filePath, '\n');
+      // シンボリックリンクの作成
+      // 既存でダミーファイルを用意しておき、それをシンボリックで上書き設定ファイルとして読み込んでいる
+      // TODO:アクセストークン読み込み実装方式の見直し
+      fs.unlinkSync('qiita.json');
+      fs.symlinkSync(filePath, 'qiita.json');
       // 処理完了メッセージ
       console.log(
         '\n' +
@@ -54,7 +59,15 @@ export class accessTokenInitialize {
       console.log('\n' + '\t' + filePath + '\n');
       return 0;
     } catch (e) {
-      console.error('error in get Qiita access token initialize: ');
+      const red = '\u001b[31m';
+      const reset = '\u001b[0m';
+      console.error(
+        '\n' +
+          red +
+          'error in get Qiita access token initialize: ' +
+          reset +
+          '\n'
+      );
       console.error(e);
       return -1;
     }
