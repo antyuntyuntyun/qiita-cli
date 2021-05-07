@@ -120,7 +120,8 @@ dist
 
 # qiita
 ## access key
-.qiita.json
+# .qiita.json
+# change to dummy file
 
 ## article
 articles/
