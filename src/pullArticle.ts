@@ -1,17 +1,28 @@
 import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
-import qiitaSetting from '../qiita.json';
+// import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
+// import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
 
 export class pullArticle {
   async exec(): Promise<number> {
     try {
+      // qiita init で設定される
+      const homeDir =
+        process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      const qiitaDir = `${homeDir}/.qiita`;
+      const filePath = `${qiitaDir}/qiita.json`;
+      // qiitq.jsonが存在しない場合はcatchされるので、ファイル存在の確認は行わない
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const qiitaSetting: { token: string } = JSON.parse(
+        fs.readFileSync(filePath, 'utf-8')
+      );
       console.log('fetching article ... ');
       await axios
         .get<QiitaPost[]>('https://qiita.com/api/v2/authenticated_user/items', {
           headers: {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             Authorization: `Bearer ${qiitaSetting.token}`,
           },
         })
