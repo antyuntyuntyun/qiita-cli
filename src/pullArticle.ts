@@ -8,7 +8,8 @@ import { QiitaPost } from '@/types/qiita';
 export class pullArticle {
   async exec(): Promise<number> {
     try {
-      // qiita init で設定される
+      // アクセストークン情報をqiita.jsonから取得
+      // qiita init で事前に設定されている必要あり
       const homeDir =
         process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -19,6 +20,7 @@ export class pullArticle {
       const qiitaSetting: { token: string } = JSON.parse(
         fs.readFileSync(filePath, 'utf-8')
       );
+
       console.log('fetching article ... ');
       await axios
         .get<QiitaPost[]>('https://qiita.com/api/v2/authenticated_user/items', {

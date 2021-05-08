@@ -18,7 +18,6 @@ export class accessTokenInitialize {
       // ユーザ入力形式指定用変数
       let inputQuestions: QuestionCollection;
 
-      // TODO: 設定ファイルが既に存在する場合、警告を出す
       if (fs.existsSync(filePath)) {
         // ユーザ入出力形式指定
         inputQuestions = [
