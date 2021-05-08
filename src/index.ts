@@ -17,10 +17,10 @@ class Main {
   // command-line-usageがエラーが出て使えないので以下の実装
   private readonly mainUsage: string = `Command:
   qiita init           qiitaとの接続設定. 初回のみ実行
-  qiita pull:article   既に投稿している記事をローカルにpull
+  qiita pull:article   既に投稿している記事をローカルにpull(強制上書き)
   qiita new:article    新しい記事を追加
-  qiita post:article   ローカルで作成した記事を投稿
-  qiita sync           ローカルで作成/修正した記事を反映
+  qiita post:article   ローカルで作成/修正した記事を選択的に投稿
+  qiita sync           ローカルで作成/修正した記事の一括反映および投稿済み記事の取得
   qiita --version, -v  qiita-cliのバージョンを表示
   qiita --help, -h     ヘルプ
 `;
