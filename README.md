@@ -6,6 +6,7 @@ qiita記事管理用のTypeScript製cli
 
 ```bash
 # node仮想環境の用意
+# ※anyenv: https://github.com/anyenv/anyenv
 nodenv install 14.16.0
 # パッケージインストール
 npm install
