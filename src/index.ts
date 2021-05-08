@@ -15,11 +15,7 @@ type CommandType =
 
 class Main {
   // command-line-usageがエラーが出て使えないので以下の実装
-  private readonly mainUsage: string =
-    emoji.get('hatched_chick') +
-    ` qiita cli
-
-Command:
+  private readonly mainUsage: string = `Command:
   qiita init           qiitaとの接続設定. 初回のみ実行
   qiita pull:article   既に投稿している記事をローカルにpull
   qiita new:article    新しい記事を追加
@@ -41,7 +37,7 @@ Command:
     // command-line-usageを利用しようとすると以下エラーを吐いてしまう
     // TypeError: Cannot read property 'arrayify' of undefined
 
-    console.log('🐥 qiita cli\n');
+    console.log('\n' + emoji.get('hatched_chick') + ' qiita cli\n');
     const exec = this.commandMap.get(process.argv[2]);
     if (exec != null) {
       const ret = await exec();
