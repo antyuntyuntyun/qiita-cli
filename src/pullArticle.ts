@@ -15,7 +15,15 @@ export class pullArticle {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const qiitaDir = `${homeDir}/.qiita`;
       const filePath = `${qiitaDir}/qiita.json`;
-      // qiitq.jsonが存在しない場合はcatchされるので、ファイル存在の確認は行わない
+      if (!fs.existsSync(filePath)) {
+        console.log(
+          emoji.get('disappointed') + ' アクセストークンが設定されていません.\n'
+        );
+        console.log(
+          'qiita init コマンドを実行してアクセストークンを設定してください.\n'
+        );
+        return -1;
+      }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const qiitaSetting: { token: string } = JSON.parse(
         fs.readFileSync(filePath, 'utf-8')
@@ -55,6 +63,7 @@ updated_at: ${post.updated_at}
 tags: ${String(JSON.stringify(post.tags))}
 private: ${String(post.private)}
 url: ${String(post.url)}
+likes_count: ${String(post.likes_count)}
 ---
 
 `;
