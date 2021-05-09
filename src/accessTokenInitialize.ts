@@ -1,8 +1,10 @@
+import axios from 'axios';
 import fs from 'fs';
 import emoji from 'node-emoji';
 import open from 'open';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
+import { User } from '@/types/qiita';
 
 export class accessTokenInitialize {
   async exec(): Promise<number> {
@@ -40,7 +42,7 @@ export class accessTokenInitialize {
       }
 
       console.log(
-        'qiitaの管理者画面にてアクセストークンを発行し、トークンをcliに入力してください\n'
+        'Qiiaの管理者画面にてアクセストークンを発行し、トークンをcliに入力してください\n'
       );
       await sleep(1500);
       // 1.5 seconds later
@@ -58,22 +60,31 @@ export class accessTokenInitialize {
 
       // ユーザ入力(prompt())
       // TODO: 入力されるアクセストークンをシェル上で非表示にする
-      const answers: Answers = await prompt(inputQuestions);
-      const token = JSON.stringify(answers, null, '  ');
-
-      // 設定ファイル書き込み
-      fs.writeFileSync(filePath, token);
-      fs.appendFileSync(filePath, '\n');
+      const answers: Answers | { token: string } = await prompt(inputQuestions);
+      // const token = JSON.stringify(answers, null, '  ');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const token: string = answers.token;
+      await axios
+        .get<User>('https://qiita.com/api/v2/authenticated_user', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          const qiitaUser = {
+            id: res.data.id,
+            token: token,
+          };
+          const qiitaUserJson = JSON.stringify(qiitaUser, null, '  ');
+          // 設定ファイル書き込み
+          fs.writeFileSync(filePath, qiitaUserJson);
+          fs.appendFileSync(filePath, '\n');
+        });
 
       // 作業ディレクトリに記事用フォルダを作成
       const articleDir = 'articles';
       if (!fs.existsSync(articleDir)) {
-        console.log('not exits ad');
-        fs.mkdir(articleDir, (err) => {
-          if (err) {
-            console.log(err);
-          }
-        });
+        fs.mkdirSync(articleDir);
       }
 
       // 処理完了メッセージ

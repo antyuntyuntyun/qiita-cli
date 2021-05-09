@@ -5,8 +5,8 @@ import fs from 'fs';
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
 
-export class pullArticle {
-  async exec(): Promise<number> {
+export class getArticle {
+  async exec(articleId: string): Promise<number> {
     try {
       // アクセストークン情報をqiita.jsonから取得
       // qiita init で事前に設定されている必要あり
@@ -29,48 +29,32 @@ export class pullArticle {
         fs.readFileSync(filePath, 'utf-8')
       );
 
-      console.log('fetching article ... ');
-
       await axios
-        .get<QiitaPost[]>('https://qiita.com/api/v2/authenticated_user/items', {
+        .get<QiitaPost>('https://qiita.com/api/v2/items/' + articleId, {
           headers: {
             Authorization: `Bearer ${qiitaSetting.token}`,
           },
         })
         .then((res) => {
           // make .md file from res data
-          console.log('------------------------------------------');
-          res.data.map((post) => {
-            console.log(post.id + ': ' + post.title);
-            const dir: string = 'articles/' + post.title + '/';
-            const filePath: string = dir + post.id + '.md';
-            fs.mkdirSync(dir, { recursive: true });
-            const frontMatter = `---
-id: ${post.id}
-title: ${post.title}
-created_at: ${post.created_at}
-updated_at: ${post.updated_at}
-tags: ${String(JSON.stringify(post.tags))}
-private: ${String(post.private)}
-url: ${String(post.url)}
-likes_count: ${String(post.likes_count)}
----
+          const dir: string = 'articles/' + res.data.title + '/';
+          const filePath: string = dir + res.data.id + '.md';
+          fs.mkdirSync(dir, { recursive: true });
+          const frontMatter = `---
+id: ${res.data.id}
+title: ${res.data.title}
+created_at: ${res.data.created_at}
+updated_at: ${res.data.updated_at}
+tags: ${String(JSON.stringify(res.data.tags))}
+private: ${String(res.data.private)}
+url: ${String(res.data.url)}
+likes_count: ${String(res.data.likes_count)}
+---`;
+          // write frontMatter
+          fs.writeFileSync(filePath, frontMatter);
+          // write body
+          fs.appendFileSync(filePath, res.data.body);
 
-`;
-            // write frontMatter
-            fs.writeFileSync(filePath, frontMatter);
-            // write body
-            fs.appendFileSync(filePath, post.body);
-          });
-          console.log('------------------------------------------');
-          // 処理完了メッセージ
-          console.log(
-            '\n' +
-              emoji.get('sparkles') +
-              ' Article fetching completed. ' +
-              emoji.get('sparkles') +
-              '\n'
-          );
           return 0;
         });
     } catch (e) {

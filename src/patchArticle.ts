@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
 // import axios from 'axios';
 import axios from 'axios';
 import emoji from 'node-emoji';
@@ -12,9 +11,8 @@ import rehypeStringify from 'rehype-stringify';
 import yaml from 'yaml';
 import unified from 'unified';
 import { QiitaPostResponse } from '~/types/qiita';
-import { getArticle } from './getArticle';
 
-export class postArticle {
+export class patchArticle {
   async exec(): Promise<number> {
     try {
       // アクセストークン情報をqiita.jsonから取得
@@ -43,7 +41,7 @@ export class postArticle {
         'aricleディレクトリのある作業ディレクトリでコマンド実行している前提での処理です.'
       );
       console.log(
-        'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
+        'articleディレクトリ内の will_be_patched.md ファイルが投稿候補記事として認識されます\n\n'
       );
       const articleBaseDir = 'articles';
 
@@ -57,16 +55,16 @@ export class postArticle {
               : listFiles(`${dir}/${dirent.name}`)
           );
 
-      // ファイル名がnot_uploaded.mdとなっているものを取得
+      // ファイル名がwill_be_patched.mdとなっているものを取得
       const filePathList: string[] = listFiles(articleBaseDir).filter((item) =>
-        item.includes('not_uploaded.md')
+        item.includes('will_be_patched.md')
       );
 
       if (filePathList.length === 0) {
         console.log(
           '\n' +
             emoji.get('disappointed') +
-            ' There are no "not_uploaded.md" files\n'
+            ' There are no "will_be_patched.md" files\n'
         );
         console.log(emoji.get('hatched_chick') + ' 処理を中止しました\n');
         return 1;
@@ -80,7 +78,7 @@ export class postArticle {
       const inputQuestions: QuestionCollection = [
         {
           type: 'list',
-          message: 'アップロードする記事を選択してください: ',
+          message: '修正アップロードする記事を選択してください: ',
           name: 'uploadArticles',
           choices: articleNameList,
         },
@@ -160,14 +158,15 @@ export class postArticle {
         '---',
         articleContents.indexOf('---') + 1
       );
-      const articleContentsBody = articleContents.substr(startIndex + 4);
+      const articleContentsBody = articleContents.substr(startIndex);
 
-      // 記事投稿成功時に生成される記事idを格納する
-      let articleId = '';
+      // 記事id
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const articleId: unknown | string = result.data.frontMatter.id;
 
       await axios
-        .post<QiitaPostResponse>(
-          'https://qiita.com/api/v2/items/',
+        .patch<QiitaPostResponse>(
+          'https://qiita.com/api/v2/items/' + String(articleId),
           {
             body: articleContentsBody,
             coediting: false,
@@ -184,40 +183,37 @@ export class postArticle {
           }
         )
         .then((res) => {
-          // console.log(res);
-          if (res.status === 201) {
+          //   console.log(res);
+          if (res.status === 200) {
             // 記事投稿成功
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            articleId = String(res.data.id);
             // 処理完了メッセージ
             console.log(
               '\n' +
                 emoji.get('sparkles') +
-                ' New Article "' +
+                ' Article "' +
                 String(title) +
-                '" is created' +
+                '" is patched' +
                 emoji.get('sparkles') +
                 '\n'
             );
           } else {
             // 記事投稿失敗
             console.log(
-              '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+              '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
             );
             return -1;
           }
         });
-      // 投稿した記事を取得
-      await new getArticle().exec(articleId);
-      // 投稿前状態のファイルを削除
-      fs.unlinkSync(String(uploadArticlePath));
+      // ファイルリネーム
+      fs.renameSync(
+        String(uploadArticlePath),
+        String(uploadArticlePath).replace('will_be_patched', String(articleId))
+      );
       return 0;
     } catch (e) {
       const red = '\u001b[31m';
       const reset = '\u001b[0m';
-      console.error(
-        '\n' + red + 'error in create new article: ' + reset + '\n'
-      );
+      console.error('\n' + red + 'error in patch article: ' + reset + '\n');
       console.error(e);
       return -1;
     }
