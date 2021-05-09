@@ -42,7 +42,14 @@
     "axios": "^0.21.1",
     "inquirer": "^8.0.0",
     "open": "^8.0.7",
-    "sleep-promise": "^9.1.0"
+    "rehype-stringify": "^8.0.0",
+    "remark-extract-frontmatter": "^3.1.0",
+    "remark-frontmatter": "^3.0.0",
+    "remark-parse": "^9.0.0",
+    "remark-rehype": "^8.1.0",
+    "sleep-promise": "^9.1.0",
+    "unified": "^9.2.1",
+    "yaml": "^1.10.2"
   },
   "bin": {
     "qiita": "./bin/qiita.js"
