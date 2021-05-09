@@ -1,6 +1,15 @@
 # qiita-cli
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 qiita記事管理用のTypeScript製cli
+
+## インストール
+
+npmにpublishしているものからインストール
+```bash
+npm install qiita-cli
+```
 
 ## 開発環境設定
 
