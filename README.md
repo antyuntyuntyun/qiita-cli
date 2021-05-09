@@ -4,6 +4,10 @@
 
 qiita記事管理用のTypeScript製cli
 
+## 紹介記事
+
+https://qiita.com/antyuntyuntyun/items/278579fd60ecd85f6e4c
+
 ## インストール
 
 npmにpublishしているものからインストール
