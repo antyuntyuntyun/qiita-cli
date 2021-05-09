@@ -1,4 +1,4 @@
-# qiita-cli ( 開発中 )
+# qiita-cli
 
 qiita記事管理用のTypeScript製cli
 
