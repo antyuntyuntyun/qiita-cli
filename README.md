@@ -1,6 +1,16 @@
 # qiita-cli
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+<p align="left">
+  <a href="https://badge.fury.io/js/qiita-cli">
+    <img src="https://badge.fury.io/js/qiita-cli.svg" alt="npm version" height="18">
+  </a>
+  <a>
+    <img height="20"src="https://img.shields.io/npm/dt/qiita-cli.svg" alt="npm downloads" />
+  </a>
+  <a href="https://opensource.org/licenses/Apache-2.0">
+    <img height="20" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License Apache 2.0" />
+  </a>
+<p>
 
 qiita記事管理用のTypeScript製cli
 
