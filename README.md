@@ -82,6 +82,7 @@ npm repositoryへのpublish, GitHubのタグとリリースを自動で生成。
 ### コミットメッセージの制約
 
 semantic-releaseのために, 以下のコミットメッセージの制約あり.
+(huskyが現状機能していないので、強制できていないが、強制の必要ないのでよしとする)
 
 |コミットメッセージ|リリースタイプ|バージョン更新例|
 |:----|:----|:----|
@@ -90,6 +91,21 @@ semantic-releaseのために, 以下のコミットメッセージの制約あ�
 |perf(books): 取得件数オプションを削除|
 |BREAKING CHANGE: これは破壊的変更です|
 |メジャーリリース|v1.0.0 → v2.0.0|
+
+### リリースのために必要なコミットについて
+
+gitflowに従い開発し、基本的にスカッシュコミットで開発しているが、そのままだとsemantic-releaseにリリースを認識させることができない。
+リリースさせる場合には、mainにマージする前にdevelopブランチにて
+`git commit --allow-empty -m "fix(semantic release): 自動リリース機能の修正"`
+等で空コミットを作った上でmainにマージすると、semantic releaseがコミットログからリリースの必要があると判定し、リリースしてくれる。
+
+### semantic release導入メモ
+
+```bash
+npm i -D semantic-release semantic-release-cli husky @commitlint/cli @commitlint/config-conventional
+npm config get registry  
+npx semantic-release-cli setup
+```
 
 ## 参考
 
