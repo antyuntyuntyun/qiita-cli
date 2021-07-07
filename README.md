@@ -96,7 +96,7 @@ semantic-releaseのために, 以下のコミットメッセージの制約あ�
 
 gitflowに従い開発し、基本的にdevelopに対してはSquash Commitで、
 mainに対しては通常のコミットでマージすること。
-通常コミットにしないと、semantic releaseがリリースを検知できないのと、PRの過去コミット表示の過去分が反映されなくなるので、厳守.
+通常コミットにしないと、semantic releaseがリリースを検知できないのと、PRの過去コミット表示の過去分が反映されなくなる。
 
 ### semantic release導入メモ
 
