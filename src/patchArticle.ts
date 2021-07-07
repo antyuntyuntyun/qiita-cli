@@ -158,7 +158,7 @@ export class patchArticle {
         '---',
         articleContents.indexOf('---') + 1
       );
-      const articleContentsBody = articleContents.substr(startIndex);
+      const articleContentsBody = articleContents.substr(startIndex + 4);
 
       // 記事id
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

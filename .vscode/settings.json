@@ -42,5 +42,8 @@
         "editor.codeActionsOnSave": {
           "source.fixAll.markdownlint": true
       }
+    },
+    "markdownlint.config": {
+      "MD033": false // inline HTML
     }
 }
