@@ -56,6 +56,27 @@
     "unified": "^9.2.1",
     "yaml": "^1.10.2"
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github",
+      "@semantic-release/npm"
+    ],
+    "branches": [
+      "master"
+    ]
+  },
   "bin": {
     "qiita": "./bin/qiita.js"
   }
