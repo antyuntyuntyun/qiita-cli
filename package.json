@@ -74,7 +74,7 @@
       "@semantic-release/npm"
     ],
     "branches": [
-      "master"
+      "main"
     ]
   },
   "bin": {
