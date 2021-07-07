@@ -21,7 +21,7 @@ qiita記事管理用のTypeScript製cli
 ## インストール
 
 ```bash
-npm install qiita-cli
+npm install -g qiita-cli
 ```
 
 ## How to use
@@ -51,6 +51,8 @@ Remark:
 
 ## 開発環境設定
 
+node仮想環境を用いて開発
+
 ```bash
 # node仮想環境の用意
 # ※anyenv: https://github.com/anyenv/anyenv
@@ -67,6 +69,27 @@ npm link
 ### VScodeによるホットロード
 
 Ctr + Shift + B でwatch状態に設定可能(設定ファイル: `.vscode/tasks.json`)
+
+## リリースについて
+
+mainブランチに対してのpushをフックにsemantic-releaseを導入している。
+npm repositoryへのpublish, GitHubのタグとリリースを自動で生成。
+
+参考:
+<https://dev.classmethod.jp/articles/github-actions-semantic-release-sample/>
+<https://zenn.dev/ucwork/articles/41cf2f20ecd2a0>
+
+### コミットメッセージの制約
+
+semantic-releaseのために, 以下のコミットメッセージの制約あり
+
+|コミットメッセージ|リリースタイプ|バージョン更新例|
+|:----|:----|:----|
+|fix(books): 書籍取得関数の取得件数の誤り修正|パッチリリース|v1.0.0 → v1.0.1|
+|feat(books): 書籍削除関数の追加|マイナーリリース|v1.0.0 → v1.1.0|
+|perf(books): 取得件数オプションを削除|
+|BREAKING CHANGE: これは破壊的変更です|
+|メジャーリリース|v1.0.0 → v2.0.0|
 
 ## 参考
 
