@@ -92,12 +92,11 @@ semantic-releaseのために, 以下のコミットメッセージの制約あ�
 |BREAKING CHANGE: これは破壊的変更です|
 |メジャーリリース|v1.0.0 → v2.0.0|
 
-### リリースのために必要なコミットについて
+### ブランチのマージについて
 
-gitflowに従い開発し、基本的にスカッシュコミットで開発しているが、そのままだとsemantic-releaseにリリースを認識させることができない。
-リリースさせる場合には、mainにマージする前にdevelopブランチにて
-`git commit --allow-empty -m "fix(semantic release): 自動リリース機能の修正"`
-等で空コミットを作った上でmainにマージすると、semantic releaseがコミットログからリリースの必要があると判定し、リリースしてくれる。
+gitflowに従い開発し、基本的にdevelopに対してはSquash Commitで、
+mainに対しては通常のコミットでマージすること。
+通常コミットにしないと、semantic releaseがリリースを検知できないのと、PRの過去コミット表示の過去分が反映されなくなるので、厳守・
 
 ### semantic release導入メモ
 
