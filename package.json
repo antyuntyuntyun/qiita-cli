@@ -1,6 +1,6 @@
 {
   "name": "qiita-cli",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "prepare": "webpack --config webpack.config.js",
-    "watch": "webpack --config webpack.dev.js --watch"
+    "watch": "webpack --config webpack.dev.js --watch",
+    "semantic-release": "semantic-release"
   },
   "author": "antyuntyun",
   "license": "ISC",
@@ -36,6 +37,7 @@
     "node-emoji": "^1.10.0",
     "prettier": "^2.2.1",
     "semantic-release": "^17.4.4",
+    "semantic-release-cli": "^5.4.3",
     "ts-jest": "^26.5.3",
     "ts-loader": "^8.0.17",
     "typescript": "^4.2.3",
@@ -71,7 +73,9 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/github",
-      "@semantic-release/npm"
+      "@semantic-release/npm",
+      "@semantic-release/changelog",
+      "@semantic-release/git"
     ],
     "branches": [
       "main"
@@ -79,5 +83,9 @@
   },
   "bin": {
     "qiita": "./bin/qiita.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antyuntyuntyun/qiita-cli.git"
   }
 }
