@@ -11,7 +11,8 @@
     "build": "webpack --mode production",
     "prepare": "webpack --config webpack.config.js",
     "watch": "webpack --config webpack.dev.js --watch",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "format": "prettier --config .prettierrc --write \"src/**/*.{ts,js}\""
   },
   "author": "antyuntyun",
   "license": "ISC",
