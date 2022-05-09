@@ -4,63 +4,62 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 
-export class newArticle {
-  async exec(): Promise<number> {
-    try {
-      console.log('Qiita 記事新規作成\n');
+export async function newArticle(): Promise<number> {
+  try {
+    console.log('Qiita 記事新規作成\n');
 
-      // ユーザ入出力形式指定用変数
-      let inputQuestions: QuestionCollection;
+    // ユーザ入出力形式指定用変数
+    let inputQuestions: QuestionCollection;
 
+    inputQuestions = [
+      {
+        type: 'input',
+        message: '記事タイトル: ',
+        name: 'article_title',
+      },
+    ];
+    const answers: Answers | { article_title: string } = await prompt(
+      inputQuestions
+    );
+
+    // 作業ディレクトリに記事用フォルダを作成
+    const articleBaseDir = 'articles';
+    if (!fs.existsSync(articleBaseDir)) {
+      fs.mkdirSync(articleBaseDir);
+    }
+
+    // ユーザ入力を元に記事フォルダ/ファイル作成
+    const articleDir = `${articleBaseDir}/${answers.article_title}`;
+    const articlePath = `${articleDir}/not_uploaded.md`;
+    if (fs.existsSync(articleDir)) {
+      // ユーザ入出力形式指定
       inputQuestions = [
         {
-          type: 'input',
-          message: '記事タイトル: ',
-          name: 'article_title',
+          type: 'confirm',
+          message:
+            '同名記事が既に存在します。新規作成により上書きされますが、よろしいですか？: ',
+          name: 'yesNoBool',
         },
       ];
-      const answers: Answers | { article_title: string } = await prompt(
+      const answers: Answers | { yesNoBool: boolean } = await prompt(
         inputQuestions
       );
-
-      // 作業ディレクトリに記事用フォルダを作成
-      const articleBaseDir = 'articles';
-      if (!fs.existsSync(articleBaseDir)) {
-        fs.mkdirSync(articleBaseDir);
-      }
-
-      // ユーザ入力を元に記事フォルダ/ファイル作成
-      const articleDir = `${articleBaseDir}/${answers.article_title}`;
-      const articlePath = `${articleDir}/not_uploaded.md`;
-      if (fs.existsSync(articleDir)) {
-        // ユーザ入出力形式指定
-        inputQuestions = [
-          {
-            type: 'confirm',
-            message:
-              '同名記事が既に存在します。新規作成により上書きされますが、よろしいですか？: ',
-            name: 'yesNoBool',
-          },
-        ];
-        const answers: Answers | { yesNoBool: boolean } = await prompt(
-          inputQuestions
+      if (!answers.yesNoBool) {
+        console.log(
+          '\n' + emoji.get('hatched_chick') + ' 処理を中止しました\n'
         );
-        if (!answers.yesNoBool) {
-          console.log(
-            '\n' + emoji.get('hatched_chick') + ' 処理を中止しました\n'
-          );
-          return 0;
-        }
-      } else {
-        fs.mkdirSync(articleDir);
+        return 0;
       }
-      const frontMatter = `---
+    } else {
+      fs.mkdirSync(articleDir);
+    }
+    const frontMatter = `---
 id: 
 title: ${answers.article_title}
 tags: [{"name":"qiita-cli","versions":[]}]
 ---  
       `;
-      const body = `
+    const body = `
 ここから本文を書く
 # ${emoji.get('hatched_chick')} qiita cliによる自動生成です.
 
@@ -82,30 +81,27 @@ tags: [{"name":"C++","versions":[]},{"name":"AtCoder","versions":[]}]
 qiita cliはローカル上で新規記事/修正記事かどうかはファイル名により判断します.
 \`not_uploaded.md\`というファイル名はそのままに ${emoji.get('bow')}
 `;
-      // sync writ for frontMatter
-      fs.writeFileSync(articlePath, frontMatter);
-      fs.appendFileSync(articlePath, body);
+    // sync writ for frontMatter
+    fs.writeFileSync(articlePath, frontMatter);
+    fs.appendFileSync(articlePath, body);
 
-      // 処理完了メッセージ
-      console.log(
-        '\n' +
-          emoji.get('sparkles') +
-          ' Template article creation is complete. ' +
-          emoji.get('sparkles') +
-          '\n'
-      );
-      console.log(
-        'Your template article has been saved to the following path:'
-      );
-      console.log('\n' + '\t' + articlePath + '\n');
-      return 0;
-    } catch (e) {
-      const red = '\u001b[31m';
-      const reset = '\u001b[0m';
-      console.error('\n' + red + 'error in make new article: ' + reset + '\n');
-      console.error(e);
-      return -1;
-    }
-    return 1;
+    // 処理完了メッセージ
+    console.log(
+      '\n' +
+        emoji.get('sparkles') +
+        ' Template article creation is complete. ' +
+        emoji.get('sparkles') +
+        '\n'
+    );
+    console.log('Your template article has been saved to the following path:');
+    console.log('\n' + '\t' + articlePath + '\n');
+    return 0;
+  } catch (e) {
+    const red = '\u001b[31m';
+    const reset = '\u001b[0m';
+    console.error('\n' + red + 'error in make new article: ' + reset + '\n');
+    console.error(e);
+    return -1;
   }
+  return 1;
 }

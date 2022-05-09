@@ -39,11 +39,11 @@ Remark:
 `;
 
   private commandMap = new Map<CommandType, () => number | Promise<number>>([
-    ['init', () => new accessTokenInitialize().exec()],
-    ['pull:article', () => new pullArticle().exec()],
-    ['new:article', () => new newArticle().exec()],
-    ['post:article', () => new postArticle().exec()],
-    ['patch:article', () => new patchArticle().exec()],
+    ['init', () => accessTokenInitialize()],
+    ['pull:article', () => pullArticle()],
+    ['new:article', () => newArticle()],
+    ['post:article', () => postArticle()],
+    ['patch:article', () => patchArticle()],
     ['sync', () => new Calc().add(1, 2)],
   ]);
 
