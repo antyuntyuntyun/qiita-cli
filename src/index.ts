@@ -33,15 +33,10 @@ program.storeOptionsAsProperties(false);
 program.version(
   packageJson.version,
   '-v, --version',
-  '\n' +
-    emoji.get('hatched_chick') +
-    'qiita cli' +
-    'version: ' +
-    packageJson.version +
-    '\n'
+  emoji.get('hatched_chick') + 'qiita cli ' + 'version: ' + packageJson.version
 );
 
-program.helpOption('-h, --help', mainUsage);
+program.helpOption('-h, --help', 'ヘルプ');
 
 program
   .command('init')
