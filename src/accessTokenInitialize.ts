@@ -45,7 +45,7 @@ export async function accessTokenInitialize(): Promise<number> {
     );
     await sleep(1500);
     // 1.5 seconds later
-    // open iita admin by web default web browser
+    // open qiita admin by web default web browser
     await open('https://qiita.com/settings/applications');
 
     // ユーザ入出力形式指定
