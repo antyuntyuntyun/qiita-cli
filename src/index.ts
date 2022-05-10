@@ -36,6 +36,8 @@ program.version(
   emoji.get('hatched_chick') + 'qiita cli ' + 'version: ' + packageJson.version
 );
 
+program.usage(mainUsage);
+
 program.helpOption('-h, --help', 'ヘルプ');
 
 program
