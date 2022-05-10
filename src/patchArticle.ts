@@ -12,6 +12,26 @@ import yaml from 'yaml';
 import unified from 'unified';
 import { QiitaPostResponse } from '~/types/qiita';
 
+interface parseResult {
+  data: {
+    frontMatter: {
+      id: null | string;
+      title: null | string;
+      tags: null | [];
+    };
+  };
+  messages: unknown;
+  history: unknown;
+  cwd: string;
+  contents: unknown | string;
+}
+
+// 記事のタグ
+interface Tag {
+  name: null | string;
+  versions: null | string[];
+}
+
 export async function patchArticle(): Promise<number> {
   try {
     // アクセストークン情報をqiita.jsonから取得
@@ -108,19 +128,6 @@ export async function patchArticle(): Promise<number> {
       })
       .use(remarkRehype)
       .use(rehypeStringify);
-    interface parseResult {
-      data: {
-        frontMatter: {
-          id: null | string;
-          title: null | string;
-          tags: null | [];
-        };
-      };
-      messages: unknown;
-      history: unknown;
-      cwd: string;
-      contents: unknown | string;
-    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any | parseResult = await processor.process(inputArticle);
@@ -129,11 +136,6 @@ export async function patchArticle(): Promise<number> {
     // 記事タイトル
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const title: unknown | string = result.data.frontMatter.title;
-    // 記事のタグ
-    interface Tag {
-      name: null | string;
-      versions: null | string[];
-    }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const tags: unknown | Tag[] = result.data.frontMatter.tags;
 
