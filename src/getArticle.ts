@@ -28,18 +28,19 @@ export async function getArticle(articleId: string): Promise<number> {
       fs.readFileSync(filePath, 'utf-8')
     );
 
-    await axios
-      .get<QiitaPost>('https://qiita.com/api/v2/items/' + articleId, {
+    const res = await axios.get<QiitaPost>(
+      'https://qiita.com/api/v2/items/' + articleId,
+      {
         headers: {
           Authorization: `Bearer ${qiitaSetting.token}`,
         },
-      })
-      .then((res) => {
-        // make .md file from res data
-        const dir: string = 'articles/' + res.data.title + '/';
-        const filePath: string = dir + res.data.id + '.md';
-        fs.mkdirSync(dir, { recursive: true });
-        const frontMatter = `---
+      }
+    );
+    // make .md file from res data
+    const dir: string = 'articles/' + res.data.title + '/';
+    const saveFilePath: string = dir + res.data.id + '.md';
+    fs.mkdirSync(dir, { recursive: true });
+    const frontMatter = `---
 id: ${res.data.id}
 title: ${res.data.title}
 created_at: ${res.data.created_at}
@@ -49,13 +50,12 @@ private: ${String(res.data.private)}
 url: ${String(res.data.url)}
 likes_count: ${String(res.data.likes_count)}
 ---`;
-        // write frontMatter
-        fs.writeFileSync(filePath, frontMatter);
-        // write body
-        fs.appendFileSync(filePath, res.data.body);
+    // write frontMatter
+    fs.writeFileSync(saveFilePath, frontMatter);
+    // write body
+    fs.appendFileSync(saveFilePath, res.data.body);
 
-        return 0;
-      });
+    return 0;
   } catch (e) {
     const red = '\u001b[31m';
     const reset = '\u001b[0m';

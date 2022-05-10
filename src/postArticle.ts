@@ -161,48 +161,45 @@ export async function postArticle(): Promise<number> {
     // 記事投稿成功時に生成される記事idを格納する
     let articleId = '';
 
-    await axios
-      .post<QiitaPostResponse>(
-        'https://qiita.com/api/v2/items/',
-        {
-          body: articleContentsBody,
-          coediting: false,
-          group_url_name: 'dev',
-          private: false,
-          tags: tags,
-          title: title,
-          tweet: false,
+    const res = await axios.post<QiitaPostResponse>(
+      'https://qiita.com/api/v2/items/',
+      {
+        body: articleContentsBody,
+        coediting: false,
+        group_url_name: 'dev',
+        private: false,
+        tags: tags,
+        title: title,
+        tweet: false,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${qiitaSetting.token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${qiitaSetting.token}`,
-          },
-        }
-      )
-      .then((res) => {
-        // console.log(res);
-        if (res.status === 201) {
-          // 記事投稿成功
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          articleId = String(res.data.id);
-          // 処理完了メッセージ
-          console.log(
-            '\n' +
-              emoji.get('sparkles') +
-              ' New Article "' +
-              String(title) +
-              '" is created' +
-              emoji.get('sparkles') +
-              '\n'
-          );
-        } else {
-          // 記事投稿失敗
-          console.log(
-            '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-          );
-          return -1;
-        }
-      });
+      }
+    );
+    // console.log(res);
+    if (res.status === 201) {
+      // 記事投稿成功
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      articleId = String(res.data.id);
+      // 処理完了メッセージ
+      console.log(
+        '\n' +
+          emoji.get('sparkles') +
+          ' New Article "' +
+          String(title) +
+          '" is created' +
+          emoji.get('sparkles') +
+          '\n'
+      );
+    } else {
+      // 記事投稿失敗
+      console.log(
+        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+      );
+      return -1;
+    }
     // 投稿した記事を取得
     await getArticle(articleId);
     // 投稿前状態のファイルを削除

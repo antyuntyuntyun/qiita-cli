@@ -160,46 +160,43 @@ export async function patchArticle(): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const articleId: unknown | string = result.data.frontMatter.id;
 
-    await axios
-      .patch<QiitaPostResponse>(
-        'https://qiita.com/api/v2/items/' + String(articleId),
-        {
-          body: articleContentsBody,
-          coediting: false,
-          group_url_name: 'dev',
-          private: false,
-          tags: tags,
-          title: title,
-          tweet: false,
+    const res = await axios.patch<QiitaPostResponse>(
+      'https://qiita.com/api/v2/items/' + String(articleId),
+      {
+        body: articleContentsBody,
+        coediting: false,
+        group_url_name: 'dev',
+        private: false,
+        tags: tags,
+        title: title,
+        tweet: false,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${qiitaSetting.token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${qiitaSetting.token}`,
-          },
-        }
-      )
-      .then((res) => {
-        //   console.log(res);
-        if (res.status === 200) {
-          // 記事投稿成功
-          // 処理完了メッセージ
-          console.log(
-            '\n' +
-              emoji.get('sparkles') +
-              ' Article "' +
-              String(title) +
-              '" is patched' +
-              emoji.get('sparkles') +
-              '\n'
-          );
-        } else {
-          // 記事投稿失敗
-          console.log(
-            '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
-          );
-          return -1;
-        }
-      });
+      }
+    );
+    //   console.log(res);
+    if (res.status === 200) {
+      // 記事投稿成功
+      // 処理完了メッセージ
+      console.log(
+        '\n' +
+          emoji.get('sparkles') +
+          ' Article "' +
+          String(title) +
+          '" is patched' +
+          emoji.get('sparkles') +
+          '\n'
+      );
+    } else {
+      // 記事投稿失敗
+      console.log(
+        '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
+      );
+      return -1;
+    }
     // ファイルリネーム
     fs.renameSync(
       String(uploadArticlePath),

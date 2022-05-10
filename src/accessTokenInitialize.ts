@@ -63,22 +63,22 @@ export async function accessTokenInitialize(): Promise<number> {
     // const token = JSON.stringify(answers, null, '  ');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const token: string = answers.token;
-    await axios
-      .get<User>('https://qiita.com/api/v2/authenticated_user', {
+    const res = await axios.get<User>(
+      'https://qiita.com/api/v2/authenticated_user',
+      {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      .then((res) => {
-        const qiitaUser = {
-          id: res.data.id,
-          token: token,
-        };
-        const qiitaUserJson = JSON.stringify(qiitaUser, null, '  ');
-        // 設定ファイル書き込み
-        fs.writeFileSync(filePath, qiitaUserJson);
-        fs.appendFileSync(filePath, '\n');
-      });
+      }
+    );
+    const qiitaUser = {
+      id: res.data.id,
+      token: token,
+    };
+    const qiitaUserJson = JSON.stringify(qiitaUser, null, '  ');
+    // 設定ファイル書き込み
+    fs.writeFileSync(filePath, qiitaUserJson);
+    fs.appendFileSync(filePath, '\n');
 
     // 作業ディレクトリに記事用フォルダを作成
     const articleDir = 'articles';

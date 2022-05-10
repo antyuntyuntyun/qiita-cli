@@ -30,21 +30,22 @@ export async function pullArticle(): Promise<number> {
 
     console.log('fetching article ... ');
 
-    await axios
-      .get<QiitaPost[]>('https://qiita.com/api/v2/authenticated_user/items', {
+    const res = await axios.get<QiitaPost[]>(
+      'https://qiita.com/api/v2/authenticated_user/items',
+      {
         headers: {
           Authorization: `Bearer ${qiitaSetting.token}`,
         },
-      })
-      .then((res) => {
-        // make .md file from res data
-        console.log('------------------------------------------');
-        res.data.map((post) => {
-          console.log(post.id + ': ' + post.title);
-          const dir: string = 'articles/' + post.title + '/';
-          const filePath: string = dir + post.id + '.md';
-          fs.mkdirSync(dir, { recursive: true });
-          const frontMatter = `---
+      }
+    );
+    // make .md file from res data
+    console.log('------------------------------------------');
+    res.data.map((post) => {
+      console.log(post.id + ': ' + post.title);
+      const dir: string = 'articles/' + post.title + '/';
+      const filePath: string = dir + post.id + '.md';
+      fs.mkdirSync(dir, { recursive: true });
+      const frontMatter = `---
 id: ${post.id}
 title: ${post.title}
 created_at: ${post.created_at}
@@ -56,22 +57,21 @@ likes_count: ${String(post.likes_count)}
 ---
 
 `;
-          // write frontMatter
-          fs.writeFileSync(filePath, frontMatter);
-          // write body
-          fs.appendFileSync(filePath, post.body);
-        });
-        console.log('------------------------------------------');
-        // 処理完了メッセージ
-        console.log(
-          '\n' +
-            emoji.get('sparkles') +
-            ' Article fetching completed. ' +
-            emoji.get('sparkles') +
-            '\n'
-        );
-        return 0;
-      });
+      // write frontMatter
+      fs.writeFileSync(filePath, frontMatter);
+      // write body
+      fs.appendFileSync(filePath, post.body);
+    });
+    console.log('------------------------------------------');
+    // 処理完了メッセージ
+    console.log(
+      '\n' +
+        emoji.get('sparkles') +
+        ' Article fetching completed. ' +
+        emoji.get('sparkles') +
+        '\n'
+    );
+    return 0;
   } catch (e) {
     const red = '\u001b[31m';
     const reset = '\u001b[0m';
