@@ -11,28 +11,8 @@ import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 import yaml from 'yaml';
 import unified from 'unified';
-import { QiitaPostResponse } from '~/types/qiita';
+import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { getArticle } from './getArticle';
-
-interface parseResult {
-  data: {
-    frontMatter: {
-      id: null | string;
-      title: null | string;
-      tags: null | [];
-    };
-  };
-  messages: unknown;
-  history: unknown;
-  cwd: string;
-  contents: unknown | string;
-}
-
-// 記事のタグ
-interface Tag {
-  name: null | string;
-  versions: null | string[];
-}
 
 export async function postArticle(): Promise<number> {
   try {
@@ -132,7 +112,7 @@ export async function postArticle(): Promise<number> {
       .use(rehypeStringify);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any | parseResult = await processor.process(inputArticle);
+    const result: any | FrontMatterParseResult = await processor.process(inputArticle);
     //   console.log(result);
 
     // 記事タイトル
