@@ -33,7 +33,11 @@ program.storeOptionsAsProperties(false);
 program.version(
   packageJson.version,
   '-v, --version',
-  emoji.get('hatched_chick') + 'qiita cli ' + 'version: ' + packageJson.version
+  [
+    emoji.get('hatched_chick') + 'qiita cli',
+    'version:',
+    packageJson.version,
+  ].join(' ')
 );
 
 program.usage(mainUsage);
