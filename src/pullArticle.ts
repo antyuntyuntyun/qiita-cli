@@ -1,6 +1,7 @@
 import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
+import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
@@ -10,10 +11,10 @@ export async function pullArticle(): Promise<number> {
     // アクセストークン情報をqiita.jsonから取得
     // qiita init で事前に設定されている必要あり
     const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
+      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'] || '';
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = `${homeDir}/.qiita`;
-    const filePath = `${qiitaDir}/qiita.json`;
+    const qiitaDir = path.join(homeDir, '.qiita');
+    const filePath = path.join(qiitaDir, 'qiita.json');
     if (!fs.existsSync(filePath)) {
       console.log(
         emoji.get('disappointed') + ' アクセストークンが設定されていません.\n'

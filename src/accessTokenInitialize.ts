@@ -5,17 +5,18 @@ import open from 'open';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
+import path from 'path';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {
     const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
+      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'] || '';
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = `${homeDir}/.qiita`;
+    const qiitaDir = path.join(homeDir, '.qiita');
     if (!fs.existsSync(qiitaDir)) {
       fs.mkdirSync(qiitaDir);
     }
-    const filePath = `${qiitaDir}/qiita.json`;
+    const filePath = path.join(qiitaDir, 'qiita.json');
     // ユーザ入力形式指定用変数
     let inputQuestions: QuestionCollection;
 

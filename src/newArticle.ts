@@ -3,6 +3,7 @@
 import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
+import path from 'path';
 
 export async function newArticle(): Promise<number> {
   try {
@@ -29,8 +30,8 @@ export async function newArticle(): Promise<number> {
     }
 
     // ユーザ入力を元に記事フォルダ/ファイル作成
-    const articleDir = `${articleBaseDir}/${answers.article_title}`;
-    const articlePath = `${articleDir}/not_uploaded.md`;
+    const articleDir = path.join(articleBaseDir, answers.article_title);
+    const articlePath = path.join(articleDir, 'not_uploaded.md');
     if (fs.existsSync(articleDir)) {
       // ユーザ入出力形式指定
       inputQuestions = [

@@ -10,6 +10,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 import yaml from 'yaml';
 import unified from 'unified';
+import path from 'path';
 import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 
 export async function patchArticle(): Promise<number> {
@@ -17,10 +18,10 @@ export async function patchArticle(): Promise<number> {
     // アクセストークン情報をqiita.jsonから取得
     // qiita init で事前に設定されている必要あり
     const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
+      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'] || '';
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = `${homeDir}/.qiita`;
-    const filePath = `${qiitaDir}/qiita.json`;
+    const qiitaDir = path.join(homeDir, '.qiita');
+    const filePath = path.join(qiitaDir, 'qiita.json');
     if (!fs.existsSync(filePath)) {
       console.log(
         emoji.get('disappointed') + ' アクセストークンが設定されていません.\n'
@@ -50,8 +51,8 @@ export async function patchArticle(): Promise<number> {
         .readdirSync(dir, { withFileTypes: true })
         .flatMap((dirent) =>
           dirent.isFile()
-            ? [`${dir}/${dirent.name}`]
-            : listFiles(`${dir}/${dirent.name}`)
+            ? [path.join(dir, dirent.name)]
+            : listFiles(path.join(dir, dirent.name))
         );
 
     // ファイル名がwill_be_patched.mdとなっているものを取得
@@ -110,7 +111,9 @@ export async function patchArticle(): Promise<number> {
       .use(rehypeStringify);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any | FrontMatterParseResult = await processor.process(inputArticle);
+    const result: any | FrontMatterParseResult = await processor.process(
+      inputArticle
+    );
     //   console.log(result);
 
     // 記事タイトル
