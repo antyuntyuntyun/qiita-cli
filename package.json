@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "commander": "^9.2.0",
     "inquirer": "^8.0.0",
     "open": "^8.0.7",
     "rehype-stringify": "^8.0.0",
