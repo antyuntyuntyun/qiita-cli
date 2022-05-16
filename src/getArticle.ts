@@ -5,29 +5,14 @@ import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
+import { loadInitializedAccessToken } from './commons/load-qiita-setting';
 
 export async function getArticle(articleId: string): Promise<number> {
   try {
-    // アクセストークン情報をqiita.jsonから取得
-    // qiita init で事前に設定されている必要あり
-    const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'] || '';
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = path.join(homeDir, `.qiita`);
-    const filePath = path.join(qiitaDir, 'qiita.json');
-    if (!fs.existsSync(filePath)) {
-      console.log(
-        emoji.get('disappointed') + ' アクセストークンが設定されていません.\n'
-      );
-      console.log(
-        'qiita init コマンドを実行してアクセストークンを設定してください.\n'
-      );
+    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    if (!qiitaSetting) {
       return -1;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const qiitaSetting: { token: string } = JSON.parse(
-      fs.readFileSync(filePath, 'utf-8')
-    );
 
     const res = await axios.get<QiitaPost>(
       'https://qiita.com/api/v2/items/' + articleId,
