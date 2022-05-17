@@ -117,7 +117,7 @@ export async function postArticle(): Promise<number> {
       '---',
       articleContents.indexOf('---') + 1
     );
-    const articleContentsBody = articleContents.substr(startIndex + 4);
+    const articleContentsBody = articleContents.substring(startIndex + 4);
 
     // 記事投稿成功時に生成される記事idを格納する
     let articleId = '';
