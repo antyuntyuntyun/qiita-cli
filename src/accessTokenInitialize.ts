@@ -11,12 +11,9 @@ import { initializeAndLoadQiitaDir } from './commons/qiita-settings';
 export async function accessTokenInitialize(): Promise<number> {
   try {
     const filePath = initializeAndLoadQiitaDir();
-    // ユーザ入力形式指定用変数
-    let inputQuestions: QuestionCollection;
-
     if (fs.existsSync(filePath)) {
       // ユーザ入出力形式指定
-      inputQuestions = [
+      const inputYesNoBoolQuestions: QuestionCollection = [
         {
           type: 'confirm',
           message:
@@ -25,7 +22,7 @@ export async function accessTokenInitialize(): Promise<number> {
         },
       ];
       const answers: Answers | { yesNoBool: boolean } = await prompt(
-        inputQuestions
+        inputYesNoBoolQuestions
       );
       if (!answers.yesNoBool) {
         console.log(
@@ -44,7 +41,7 @@ export async function accessTokenInitialize(): Promise<number> {
     await open('https://qiita.com/settings/applications');
 
     // ユーザ入出力形式指定
-    inputQuestions = [
+    const inputTokenQuestions: QuestionCollection = [
       {
         type: 'input',
         message: 'Qiita AccessToken: ',
@@ -54,7 +51,9 @@ export async function accessTokenInitialize(): Promise<number> {
 
     // ユーザ入力(prompt())
     // TODO: 入力されるアクセストークンをシェル上で非表示にする
-    const answers: Answers | { token: string } = await prompt(inputQuestions);
+    const answers: Answers | { token: string } = await prompt(
+      inputTokenQuestions
+    );
     // const token = JSON.stringify(answers, null, '  ');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const token: string = answers.token;
