@@ -29,8 +29,8 @@ export async function pullArticle(): Promise<number> {
     console.log('------------------------------------------');
     res.data.map((post) => {
       console.log(post.id + ': ' + post.title);
-      const dir: string = 'articles/' + post.title + '/';
-      const filePath: string = dir + post.id + '.md';
+      const dir: string = path.join('articles', post.title);
+      const filePath: string = path.join(dir, post.id + '.md');
       fs.mkdirSync(dir, { recursive: true });
       const frontMatter = `---
 id: ${post.id}

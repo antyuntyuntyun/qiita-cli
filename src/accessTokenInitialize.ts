@@ -91,7 +91,7 @@ export async function accessTokenInitialize(): Promise<number> {
     console.log('Your token has been saved to the following path:');
     console.log('\n' + '\t' + filePath + '\n');
     console.log('Your articles folder:');
-    console.log('\n' + '\t' + process.cwd() + '/articles/' + '\n');
+    console.log('\n' + '\t' + path.join(process.cwd(), 'articles') + '\n');
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
