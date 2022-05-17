@@ -13,6 +13,7 @@ import unified from 'unified';
 import path from 'path';
 import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiita-settings';
+import { loadArticleFiles } from './commons/articles-directory';
 
 export async function patchArticle(): Promise<number> {
   try {
@@ -30,20 +31,10 @@ export async function patchArticle(): Promise<number> {
     );
     const articleBaseDir = 'articles';
 
-    //   TODO: utill化
-    const listFiles = (dir: string): string[] =>
-      fs
-        .readdirSync(dir, { withFileTypes: true })
-        .flatMap((dirent) =>
-          dirent.isFile()
-            ? [path.join(dir, dirent.name)]
-            : listFiles(path.join(dir, dirent.name))
-        );
-
     // ファイル名がwill_be_patched.mdとなっているものを取得
-    const filePathList: string[] = listFiles(articleBaseDir).filter((item) =>
-      item.includes('will_be_patched.md')
-    );
+    const filePathList: string[] = loadArticleFiles(
+      articleBaseDir
+    ).filter((item) => item.includes('will_be_patched.md'));
 
     if (filePathList.length === 0) {
       console.log(
@@ -73,7 +64,7 @@ export async function patchArticle(): Promise<number> {
     );
 
     //   TODO: 複数選択対応
-    const uploadArticlePath: string | undefined = listFiles(
+    const uploadArticlePath: string | undefined = loadArticleFiles(
       articleBaseDir
     ).find((item) => item.includes(answers.uploadArticles));
 

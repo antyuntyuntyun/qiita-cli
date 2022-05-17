@@ -15,6 +15,7 @@ import path from 'path';
 import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { getArticle } from './getArticle';
 import { loadInitializedAccessToken } from './commons/qiita-settings';
+import { loadArticleFiles } from './commons/articles-directory';
 
 export async function postArticle(): Promise<number> {
   try {
@@ -32,20 +33,10 @@ export async function postArticle(): Promise<number> {
     );
     const articleBaseDir = 'articles';
 
-    //   TODO: utill化
-    const listFiles = (dir: string): string[] =>
-      fs
-        .readdirSync(dir, { withFileTypes: true })
-        .flatMap((dirent) =>
-          dirent.isFile()
-            ? [path.join(dir, dirent.name)]
-            : listFiles(path.join(dir, dirent.name))
-        );
-
     // ファイル名がnot_uploaded.mdとなっているものを取得
-    const filePathList: string[] = listFiles(articleBaseDir).filter((item) =>
-      item.includes('not_uploaded.md')
-    );
+    const filePathList: string[] = loadArticleFiles(
+      articleBaseDir
+    ).filter((item) => item.includes('not_uploaded.md'));
 
     if (filePathList.length === 0) {
       console.log(
@@ -75,7 +66,7 @@ export async function postArticle(): Promise<number> {
     );
 
     //   TODO: 複数選択対応
-    const uploadArticlePath: string | undefined = listFiles(
+    const uploadArticlePath: string | undefined = loadArticleFiles(
       articleBaseDir
     ).find((item) => item.includes(answers.uploadArticles));
 
