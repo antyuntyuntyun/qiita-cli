@@ -22,3 +22,14 @@ export function loadInitializedAccessToken(): { token: string } | null {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
+
+export function initializeAndLoadQiitaDir(): string {
+  const homeDir =
+    process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'] || '';
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  const qiitaDir = path.join(homeDir, '.qiita');
+  if (!fs.existsSync(qiitaDir)) {
+    fs.mkdirSync(qiitaDir);
+  }
+  return path.join(qiitaDir, 'qiita.json');
+}

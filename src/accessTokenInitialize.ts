@@ -6,17 +6,11 @@ import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
 import path from 'path';
+import { initializeAndLoadQiitaDir } from './commons/qiita-settings';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {
-    const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'] || '';
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = path.join(homeDir, '.qiita');
-    if (!fs.existsSync(qiitaDir)) {
-      fs.mkdirSync(qiitaDir);
-    }
-    const filePath = path.join(qiitaDir, 'qiita.json');
+    const filePath = initializeAndLoadQiitaDir();
     // ユーザ入力形式指定用変数
     let inputQuestions: QuestionCollection;
 

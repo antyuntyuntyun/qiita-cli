@@ -5,7 +5,7 @@ import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
-import { loadInitializedAccessToken } from './commons/load-qiita-setting';
+import { loadInitializedAccessToken } from './commons/qiita-settings';
 
 export async function pullArticle(): Promise<number> {
   try {

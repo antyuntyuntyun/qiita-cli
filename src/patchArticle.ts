@@ -12,7 +12,7 @@ import yaml from 'yaml';
 import unified from 'unified';
 import path from 'path';
 import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
-import { loadInitializedAccessToken } from './commons/load-qiita-setting';
+import { loadInitializedAccessToken } from './commons/qiita-settings';
 
 export async function patchArticle(): Promise<number> {
   try {
