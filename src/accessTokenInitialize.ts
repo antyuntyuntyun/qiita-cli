@@ -6,7 +6,7 @@ import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
 import path from 'path';
-import { initializeAndLoadQiitaDir } from './commons/qiita-settings';
+import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {

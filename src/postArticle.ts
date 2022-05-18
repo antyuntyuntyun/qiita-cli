@@ -14,8 +14,8 @@ import unified from 'unified';
 import path from 'path';
 import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { getArticle } from './getArticle';
-import { loadInitializedAccessToken } from './commons/qiita-settings';
-import { loadArticleFiles } from './commons/articles-directory';
+import { loadInitializedAccessToken } from './commons/qiitaSettings';
+import { loadArticleFiles } from './commons/articlesDirectory';
 
 export async function postArticle(): Promise<number> {
   try {
