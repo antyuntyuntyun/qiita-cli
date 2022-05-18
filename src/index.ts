@@ -60,7 +60,7 @@ program
     'Qiitaで発行したaccessTokenを入力してください'
   )
   .action(async (options: ExtraInputOptions) => {
-    await pullArticle();
+    await pullArticle(options);
   });
 
 program
@@ -78,7 +78,7 @@ program
     'Qiitaで発行したaccessTokenを入力してください'
   )
   .action(async (options: ExtraInputOptions) => {
-    await postArticle();
+    await postArticle(options);
   });
 
 program
@@ -89,7 +89,7 @@ program
     'Qiitaで発行したaccessTokenを入力してください'
   )
   .action(async (options: ExtraInputOptions) => {
-    await patchArticle();
+    await patchArticle(options);
   });
 
 program

@@ -16,10 +16,13 @@ import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { getArticle } from './getArticle';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { loadArticleFiles } from './commons/articlesDirectory';
+import { ExtraInputOptions } from '~/types/command';
 
-export async function postArticle(): Promise<number> {
+export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {
-    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    const qiitaSetting: { token: string } | null = options.token
+      ? { token: options.token }
+      : loadInitializedAccessToken();
     if (!qiitaSetting) {
       return -1;
     }

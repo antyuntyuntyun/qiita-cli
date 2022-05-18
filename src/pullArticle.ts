@@ -6,11 +6,14 @@ import path from 'path';
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
+import { ExtraInputOptions } from '~/types/command';
 
-export async function pullArticle(): Promise<number> {
+export async function pullArticle(options: ExtraInputOptions): Promise<number> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    const qiitaSetting: { token: string } | null = options.token
+      ? { token: options.token }
+      : loadInitializedAccessToken();
     if (!qiitaSetting) {
       return -1;
     }
