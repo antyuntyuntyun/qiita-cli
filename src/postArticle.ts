@@ -48,8 +48,8 @@ export async function postArticle(): Promise<number> {
       return 1;
     }
     const articleNameList: string[] = filePathList.map((item) => {
-      // articlesフォルダ直下に記事名が記載されているフォルダが存在する前提
-      return item.split('/')[1];
+      // mdファイルの上に記事名が記載されているフォルダが存在する想定
+      return path.basename(path.dirname(item));
     });
 
     //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
