@@ -1,45 +1,31 @@
 import axios from 'axios';
-import emoji from 'node-emoji';
 import fs from 'fs';
+import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost } from '@/types/qiita';
+import { loadInitializedAccessToken } from './commons/qiitaSettings';
 
 export async function getArticle(articleId: string): Promise<number> {
   try {
-    // アクセストークン情報をqiita.jsonから取得
-    // qiita init で事前に設定されている必要あり
-    const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = `${homeDir}/.qiita`;
-    const filePath = `${qiitaDir}/qiita.json`;
-    if (!fs.existsSync(filePath)) {
-      console.log(
-        emoji.get('disappointed') + ' アクセストークンが設定されていません.\n'
-      );
-      console.log(
-        'qiita init コマンドを実行してアクセストークンを設定してください.\n'
-      );
+    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    if (!qiitaSetting) {
       return -1;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const qiitaSetting: { token: string } = JSON.parse(
-      fs.readFileSync(filePath, 'utf-8')
-    );
 
-    await axios
-      .get<QiitaPost>('https://qiita.com/api/v2/items/' + articleId, {
+    const res = await axios.get<QiitaPost>(
+      'https://qiita.com/api/v2/items/' + articleId,
+      {
         headers: {
           Authorization: `Bearer ${qiitaSetting.token}`,
         },
-      })
-      .then((res) => {
-        // make .md file from res data
-        const dir: string = 'articles/' + res.data.title + '/';
-        const filePath: string = dir + res.data.id + '.md';
-        fs.mkdirSync(dir, { recursive: true });
-        const frontMatter = `---
+      }
+    );
+    // make .md file from res data
+    const dir: string = path.join('articles', res.data.title);
+    const saveFilePath: string = path.join(dir, res.data.id + '.md');
+    fs.mkdirSync(dir, { recursive: true });
+    const frontMatter = `---
 id: ${res.data.id}
 title: ${res.data.title}
 created_at: ${res.data.created_at}
@@ -49,13 +35,12 @@ private: ${String(res.data.private)}
 url: ${String(res.data.url)}
 likes_count: ${String(res.data.likes_count)}
 ---`;
-        // write frontMatter
-        fs.writeFileSync(filePath, frontMatter);
-        // write body
-        fs.appendFileSync(filePath, res.data.body);
+    // write frontMatter
+    fs.writeFileSync(saveFilePath, frontMatter);
+    // write body
+    fs.appendFileSync(saveFilePath, res.data.body);
 
-        return 0;
-      });
+    return 0;
   } catch (e) {
     const red = '\u001b[31m';
     const reset = '\u001b[0m';

@@ -3,15 +3,14 @@
 import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
+import path from 'path';
 
 export async function newArticle(): Promise<number> {
   try {
     console.log('Qiita 記事新規作成\n');
 
     // ユーザ入出力形式指定用変数
-    let inputQuestions: QuestionCollection;
-
-    inputQuestions = [
+    const inputArticleTitleQuestions: QuestionCollection = [
       {
         type: 'input',
         message: '記事タイトル: ',
@@ -19,7 +18,7 @@ export async function newArticle(): Promise<number> {
       },
     ];
     const answers: Answers | { article_title: string } = await prompt(
-      inputQuestions
+      inputArticleTitleQuestions
     );
 
     // 作業ディレクトリに記事用フォルダを作成
@@ -29,11 +28,11 @@ export async function newArticle(): Promise<number> {
     }
 
     // ユーザ入力を元に記事フォルダ/ファイル作成
-    const articleDir = `${articleBaseDir}/${answers.article_title}`;
-    const articlePath = `${articleDir}/not_uploaded.md`;
+    const articleDir = path.join(articleBaseDir, answers.article_title);
+    const articlePath = path.join(articleDir, 'not_uploaded.md');
     if (fs.existsSync(articleDir)) {
       // ユーザ入出力形式指定
-      inputQuestions = [
+      const inputYesNoBoolQuestions: QuestionCollection = [
         {
           type: 'confirm',
           message:
@@ -42,7 +41,7 @@ export async function newArticle(): Promise<number> {
         },
       ];
       const answers: Answers | { yesNoBool: boolean } = await prompt(
-        inputQuestions
+        inputYesNoBoolQuestions
       );
       if (!answers.yesNoBool) {
         console.log(

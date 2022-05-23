@@ -5,23 +5,15 @@ import open from 'open';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
+import path from 'path';
+import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {
-    const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = `${homeDir}/.qiita`;
-    if (!fs.existsSync(qiitaDir)) {
-      fs.mkdirSync(qiitaDir);
-    }
-    const filePath = `${qiitaDir}/qiita.json`;
-    // ユーザ入力形式指定用変数
-    let inputQuestions: QuestionCollection;
-
+    const filePath = initializeAndLoadQiitaDir();
     if (fs.existsSync(filePath)) {
       // ユーザ入出力形式指定
-      inputQuestions = [
+      const inputYesNoBoolQuestions: QuestionCollection = [
         {
           type: 'confirm',
           message:
@@ -30,7 +22,7 @@ export async function accessTokenInitialize(): Promise<number> {
         },
       ];
       const answers: Answers | { yesNoBool: boolean } = await prompt(
-        inputQuestions
+        inputYesNoBoolQuestions
       );
       if (!answers.yesNoBool) {
         console.log(
@@ -49,7 +41,7 @@ export async function accessTokenInitialize(): Promise<number> {
     await open('https://qiita.com/settings/applications');
 
     // ユーザ入出力形式指定
-    inputQuestions = [
+    const inputTokenQuestions: QuestionCollection = [
       {
         type: 'input',
         message: 'Qiita AccessToken: ',
@@ -59,26 +51,28 @@ export async function accessTokenInitialize(): Promise<number> {
 
     // ユーザ入力(prompt())
     // TODO: 入力されるアクセストークンをシェル上で非表示にする
-    const answers: Answers | { token: string } = await prompt(inputQuestions);
+    const answers: Answers | { token: string } = await prompt(
+      inputTokenQuestions
+    );
     // const token = JSON.stringify(answers, null, '  ');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const token: string = answers.token;
-    await axios
-      .get<User>('https://qiita.com/api/v2/authenticated_user', {
+    const res = await axios.get<User>(
+      'https://qiita.com/api/v2/authenticated_user',
+      {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      .then((res) => {
-        const qiitaUser = {
-          id: res.data.id,
-          token: token,
-        };
-        const qiitaUserJson = JSON.stringify(qiitaUser, null, '  ');
-        // 設定ファイル書き込み
-        fs.writeFileSync(filePath, qiitaUserJson);
-        fs.appendFileSync(filePath, '\n');
-      });
+      }
+    );
+    const qiitaUser = {
+      id: res.data.id,
+      token: token,
+    };
+    const qiitaUserJson = JSON.stringify(qiitaUser, null, '  ');
+    // 設定ファイル書き込み
+    fs.writeFileSync(filePath, qiitaUserJson);
+    fs.appendFileSync(filePath, '\n');
 
     // 作業ディレクトリに記事用フォルダを作成
     const articleDir = 'articles';
@@ -97,7 +91,7 @@ export async function accessTokenInitialize(): Promise<number> {
     console.log('Your token has been saved to the following path:');
     console.log('\n' + '\t' + filePath + '\n');
     console.log('Your articles folder:');
-    console.log('\n' + '\t' + process.cwd() + '/articles/' + '\n');
+    console.log('\n' + '\t' + path.join(process.cwd(), 'articles') + '\n');
     return 0;
   } catch (e) {
     const red = '\u001b[31m';

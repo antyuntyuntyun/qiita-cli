@@ -10,30 +10,17 @@ import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 import yaml from 'yaml';
 import unified from 'unified';
-import { QiitaPostResponse } from '~/types/qiita';
+import path from 'path';
+import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
+import { loadInitializedAccessToken } from './commons/qiitaSettings';
+import { loadArticleFiles } from './commons/articlesDirectory';
 
 export async function patchArticle(): Promise<number> {
   try {
-    // アクセストークン情報をqiita.jsonから取得
-    // qiita init で事前に設定されている必要あり
-    const homeDir =
-      process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const qiitaDir = `${homeDir}/.qiita`;
-    const filePath = `${qiitaDir}/qiita.json`;
-    if (!fs.existsSync(filePath)) {
-      console.log(
-        emoji.get('disappointed') + ' アクセストークンが設定されていません.\n'
-      );
-      console.log(
-        'qiita init コマンドを実行してアクセストークンを設定してください.\n'
-      );
+    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    if (!qiitaSetting) {
       return -1;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const qiitaSetting: { token: string } = JSON.parse(
-      fs.readFileSync(filePath, 'utf-8')
-    );
 
     console.log('Qiita 記事投稿\n\n');
     console.log(
@@ -44,20 +31,10 @@ export async function patchArticle(): Promise<number> {
     );
     const articleBaseDir = 'articles';
 
-    //   TODO: utill化
-    const listFiles = (dir: string): string[] =>
-      fs
-        .readdirSync(dir, { withFileTypes: true })
-        .flatMap((dirent) =>
-          dirent.isFile()
-            ? [`${dir}/${dirent.name}`]
-            : listFiles(`${dir}/${dirent.name}`)
-        );
-
     // ファイル名がwill_be_patched.mdとなっているものを取得
-    const filePathList: string[] = listFiles(articleBaseDir).filter((item) =>
-      item.includes('will_be_patched.md')
-    );
+    const filePathList: string[] = loadArticleFiles(
+      articleBaseDir
+    ).filter((item) => item.includes('will_be_patched.md'));
 
     if (filePathList.length === 0) {
       console.log(
@@ -69,8 +46,8 @@ export async function patchArticle(): Promise<number> {
       return 1;
     }
     const articleNameList: string[] = filePathList.map((item) => {
-      // articlesフォルダ直下に記事名が記載されているフォルダが存在する前提
-      return item.split('/')[1];
+      // mdファイルの上に記事名が記載されているフォルダが存在する想定
+      return path.basename(path.dirname(item));
     });
 
     //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
@@ -87,7 +64,7 @@ export async function patchArticle(): Promise<number> {
     );
 
     //   TODO: 複数選択対応
-    const uploadArticlePath: string | undefined = listFiles(
+    const uploadArticlePath: string | undefined = loadArticleFiles(
       articleBaseDir
     ).find((item) => item.includes(answers.uploadArticles));
 
@@ -108,32 +85,16 @@ export async function patchArticle(): Promise<number> {
       })
       .use(remarkRehype)
       .use(rehypeStringify);
-    interface parseResult {
-      data: {
-        frontMatter: {
-          id: null | string;
-          title: null | string;
-          tags: null | [];
-        };
-      };
-      messages: unknown;
-      history: unknown;
-      cwd: string;
-      contents: unknown | string;
-    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any | parseResult = await processor.process(inputArticle);
+    const result: any | FrontMatterParseResult = await processor.process(
+      inputArticle
+    );
     //   console.log(result);
 
     // 記事タイトル
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const title: unknown | string = result.data.frontMatter.title;
-    // 記事のタグ
-    interface Tag {
-      name: null | string;
-      versions: null | string[];
-    }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const tags: unknown | Tag[] = result.data.frontMatter.tags;
 
@@ -154,52 +115,49 @@ export async function patchArticle(): Promise<number> {
       '---',
       articleContents.indexOf('---') + 1
     );
-    const articleContentsBody = articleContents.substr(startIndex + 4);
+    const articleContentsBody = articleContents.substring(startIndex + 4);
 
     // 記事id
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const articleId: unknown | string = result.data.frontMatter.id;
 
-    await axios
-      .patch<QiitaPostResponse>(
-        'https://qiita.com/api/v2/items/' + String(articleId),
-        {
-          body: articleContentsBody,
-          coediting: false,
-          group_url_name: 'dev',
-          private: false,
-          tags: tags,
-          title: title,
-          tweet: false,
+    const res = await axios.patch<QiitaPostResponse>(
+      'https://qiita.com/api/v2/items/' + String(articleId),
+      {
+        body: articleContentsBody,
+        coediting: false,
+        group_url_name: 'dev',
+        private: false,
+        tags: tags,
+        title: title,
+        tweet: false,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${qiitaSetting.token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${qiitaSetting.token}`,
-          },
-        }
-      )
-      .then((res) => {
-        //   console.log(res);
-        if (res.status === 200) {
-          // 記事投稿成功
-          // 処理完了メッセージ
-          console.log(
-            '\n' +
-              emoji.get('sparkles') +
-              ' Article "' +
-              String(title) +
-              '" is patched' +
-              emoji.get('sparkles') +
-              '\n'
-          );
-        } else {
-          // 記事投稿失敗
-          console.log(
-            '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
-          );
-          return -1;
-        }
-      });
+      }
+    );
+    //   console.log(res);
+    if (res.status === 200) {
+      // 記事投稿成功
+      // 処理完了メッセージ
+      console.log(
+        '\n' +
+          emoji.get('sparkles') +
+          ' Article "' +
+          String(title) +
+          '" is patched' +
+          emoji.get('sparkles') +
+          '\n'
+      );
+    } else {
+      // 記事投稿失敗
+      console.log(
+        '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
+      );
+      return -1;
+    }
     // ファイルリネーム
     fs.renameSync(
       String(uploadArticlePath),
