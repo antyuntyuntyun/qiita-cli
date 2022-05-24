@@ -7,6 +7,7 @@ import packageJson from '../package.json';
 import { postArticle } from './postArticle';
 import { patchArticle } from './patchArticle';
 import { program } from 'commander';
+import { ExtraInputOptions } from '~/types/command';
 
 const mainUsage: string = `Command:
 qiita init                    qiitaとの接続設定. 初回のみ実行
@@ -54,8 +55,12 @@ program
 program
   .command('pull:article')
   .description('既に投稿している記事をローカルにpull(強制上書き)')
-  .action(async () => {
-    await pullArticle();
+  .option(
+    '-t, --token <accessToken>',
+    'Qiitaで発行したaccessTokenを入力してください'
+  )
+  .action(async (options: ExtraInputOptions) => {
+    await pullArticle(options);
   });
 
 program
@@ -68,15 +73,23 @@ program
 program
   .command('post:article')
   .description('ローカルで新規作成した記事を選択的に投稿')
-  .action(async () => {
-    await postArticle();
+  .option(
+    '-t, --token <accessToken>',
+    'Qiitaで発行したaccessTokenを入力してください'
+  )
+  .action(async (options: ExtraInputOptions) => {
+    await postArticle(options);
   });
 
 program
   .command('patch:article')
   .description('ローカルで修正した記事を選択的に投稿')
-  .action(async () => {
-    await patchArticle();
+  .option(
+    '-t, --token <accessToken>',
+    'Qiitaで発行したaccessTokenを入力してください'
+  )
+  .action(async (options: ExtraInputOptions) => {
+    await patchArticle(options);
   });
 
 program

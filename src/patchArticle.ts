@@ -14,10 +14,15 @@ import path from 'path';
 import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { loadArticleFiles } from './commons/articlesDirectory';
+import { ExtraInputOptions } from '~/types/command';
 
-export async function patchArticle(): Promise<number> {
+export async function patchArticle(
+  options: ExtraInputOptions
+): Promise<number> {
   try {
-    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    const qiitaSetting: { token: string } | null = options.token
+      ? { token: options.token }
+      : loadInitializedAccessToken();
     if (!qiitaSetting) {
       return -1;
     }
@@ -32,9 +37,9 @@ export async function patchArticle(): Promise<number> {
     const articleBaseDir = 'articles';
 
     // ファイル名がwill_be_patched.mdとなっているものを取得
-    const filePathList: string[] = loadArticleFiles(
-      articleBaseDir
-    ).filter((item) => item.includes('will_be_patched.md'));
+    const filePathList: string[] = loadArticleFiles(articleBaseDir).filter(
+      (item) => item.includes('will_be_patched.md')
+    );
 
     if (filePathList.length === 0) {
       console.log(

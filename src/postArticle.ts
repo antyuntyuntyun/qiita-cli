@@ -16,10 +16,13 @@ import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
 import { getArticle } from './getArticle';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { loadArticleFiles } from './commons/articlesDirectory';
+import { ExtraInputOptions } from '~/types/command';
 
-export async function postArticle(): Promise<number> {
+export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {
-    const qiitaSetting: { token: string } | null = loadInitializedAccessToken();
+    const qiitaSetting: { token: string } | null = options.token
+      ? { token: options.token }
+      : loadInitializedAccessToken();
     if (!qiitaSetting) {
       return -1;
     }
@@ -34,9 +37,9 @@ export async function postArticle(): Promise<number> {
     const articleBaseDir = 'articles';
 
     // ファイル名がnot_uploaded.mdとなっているものを取得
-    const filePathList: string[] = loadArticleFiles(
-      articleBaseDir
-    ).filter((item) => item.includes('not_uploaded.md'));
+    const filePathList: string[] = loadArticleFiles(articleBaseDir).filter(
+      (item) => item.includes('not_uploaded.md')
+    );
 
     if (filePathList.length === 0) {
       console.log(
