@@ -30,15 +30,17 @@ export async function patchArticle(
     const articleBaseDir = 'articles';
 
     const filePathList: string[] = loadArticleFiles(articleBaseDir);
-    const updateCandidateMatterMarkdowns: GrayMatterFile<string>[] = [];
+    const updateCandidateMatterMarkdowns: {
+      [s: string]: GrayMatterFile<string>;
+    } = {};
     for (const filePath of filePathList) {
       const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
-      if (parsedMatter.data.id) {
-        updateCandidateMatterMarkdowns.push(parsedMatter);
+      if (parsedMatter.data.id && parsedMatter.data.title) {
+        updateCandidateMatterMarkdowns[filePath] = parsedMatter;
       }
     }
 
-    if (updateCandidateMatterMarkdowns.length === 0) {
+    if (Object.keys(updateCandidateMatterMarkdowns).length === 0) {
       console.log(
         '\n' +
           emoji.get('disappointed') +
@@ -54,18 +56,14 @@ export async function patchArticle(
         type: 'list',
         message: '修正アップロードする記事を選択してください: ',
         name: 'uploadArticles',
-        choices: updateCandidateMatterMarkdowns.map(
-          (candidate) => candidate.data.title
-        ),
+        choices: Object.keys(updateCandidateMatterMarkdowns),
       },
     ];
     const answers = await prompt(inputQuestions);
 
     //   TODO: 複数選択対応
     const uploadMatterMarkdown: GrayMatterFile<string> | undefined =
-      updateCandidateMatterMarkdowns.find(
-        (item) => item.data.title === answers.uploadArticles
-      );
+      updateCandidateMatterMarkdowns[answers.uploadArticles];
 
     if (!uploadMatterMarkdown) {
       // 記事投稿失敗
