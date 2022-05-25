@@ -77,17 +77,3 @@ export interface User {
   twitter_screen_name: null | string;
   website_url: null | string;
 }
-
-export interface FrontMatterParseResult {
-  data: {
-    frontMatter: {
-      id: null | string;
-      title: null | string;
-      tags: null | [];
-    };
-  };
-  messages: unknown;
-  history: unknown;
-  cwd: string;
-  contents: unknown | string;
-}
