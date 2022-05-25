@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-// import axios from 'axios';
 import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { QiitaPostResponse, Tag } from '~/types/qiita';
-import { getArticle } from './getArticle';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
@@ -113,8 +110,6 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
           emoji.get('sparkles') +
           '\n'
       );
-      // 投稿した記事を取得
-      await getArticle(articleId);
     } else {
       // 記事投稿失敗
       console.log(
