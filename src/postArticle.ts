@@ -27,15 +27,17 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     const articleBaseDir = 'articles';
 
     const filePathList: string[] = loadArticleFiles(articleBaseDir);
-    const newPostCandidateMatterMarkdowns: GrayMatterFile<string>[] = [];
+    const newPostCandidateMatterMarkdowns: {
+      [s: string]: GrayMatterFile<string>;
+    } = {};
     for (const filePath of filePathList) {
       const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
       if (!parsedMatter.data.id && parsedMatter.data.title) {
-        newPostCandidateMatterMarkdowns.push(parsedMatter);
+        newPostCandidateMatterMarkdowns[filePath] = parsedMatter;
       }
     }
 
-    if (newPostCandidateMatterMarkdowns.length === 0) {
+    if (Object.keys(newPostCandidateMatterMarkdowns).length === 0) {
       console.log(
         '\n' +
           emoji.get('disappointed') +
@@ -51,18 +53,15 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         type: 'list',
         message: 'アップロードする記事を選択してください: ',
         name: 'uploadArticles',
-        choices: newPostCandidateMatterMarkdowns.map(
-          (candidate) => candidate.data.title
-        ),
+        choices: Object.keys(newPostCandidateMatterMarkdowns),
       },
     ];
     const answers = await prompt(inputQuestions);
 
+    const postFilePath = answers.uploadArticles;
     //   TODO: 複数選択対応
     const uploadMatterMarkdown: GrayMatterFile<string> | undefined =
-      newPostCandidateMatterMarkdowns.find(
-        (item) => item.data.title === answers.uploadArticles
-      );
+      newPostCandidateMatterMarkdowns[postFilePath];
 
     if (!uploadMatterMarkdown) {
       // 記事投稿失敗
@@ -98,8 +97,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     );
     if (res.status === 201) {
       // 記事投稿成功
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const articleId = String(res.data.id);
+      const postData = res.data;
       // 処理完了メッセージ
       console.log(
         '\n' +
@@ -110,6 +108,17 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
           emoji.get('sparkles') +
           '\n'
       );
+      const renewalPost = matter.stringify(postData.body, {
+        id: postData.id,
+        title: postData.title,
+        created_at: postData.created_at,
+        updated_at: postData.updated_at,
+        tags: JSON.stringify(postData.tags),
+        private: postData.private,
+        url: postData.url,
+        likes_count: postData.likes_count,
+      });
+      fs.writeFileSync(postFilePath, renewalPost);
     } else {
       // 記事投稿失敗
       console.log(
