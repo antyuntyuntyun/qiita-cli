@@ -31,9 +31,9 @@ export async function patchArticle(
     const articleBaseDir = 'articles';
 
     // ファイル名がwill_be_patched.mdとなっているものを取得
-    const filePathList: string[] = loadArticleFiles(articleBaseDir).filter(
-      (item) => item.includes('will_be_patched.md')
-    );
+    const filePathList: string[] = loadArticleFiles(
+      articleBaseDir
+    ).filter((item) => item.includes('will_be_patched.md'));
 
     if (filePathList.length === 0) {
       console.log(
