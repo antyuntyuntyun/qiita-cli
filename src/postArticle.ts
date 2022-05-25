@@ -30,7 +30,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     const newPostCandidateMatterMarkdowns: GrayMatterFile<string>[] = [];
     for (const filePath of filePathList) {
       const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
-      if (!parsedMatter.data.id) {
+      if (!parsedMatter.data.id && parsedMatter.data.title) {
         newPostCandidateMatterMarkdowns.push(parsedMatter);
       }
     }
@@ -67,7 +67,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     if (!uploadMatterMarkdown) {
       // 記事投稿失敗
       console.log(
-        '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
+        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
       );
       return -1;
     }
