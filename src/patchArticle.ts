@@ -31,9 +31,9 @@ export async function patchArticle(
     const articleBaseDir = 'articles';
 
     // ファイル名がwill_be_patched.mdとなっているものを取得
-    const filePathList: string[] = loadArticleFiles(
-      articleBaseDir
-    ).filter((item) => item.includes('will_be_patched.md'));
+    const filePathList: string[] = loadArticleFiles(articleBaseDir).filter(
+      (item) => item.includes('will_be_patched.md')
+    );
 
     if (filePathList.length === 0) {
       console.log(
@@ -73,8 +73,7 @@ export async function patchArticle(
     );
 
     // 記事タイトル
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const title: string = parsedMatterMarkdown.data.title;
+    const title: string = parsedMatterMarkdown.data.title || '';
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const tags: unknown | Tag[] = parsedMatterMarkdown.data.tags;
 
