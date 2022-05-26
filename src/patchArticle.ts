@@ -92,7 +92,6 @@ export async function patchArticle(
         private: false,
         tags: tags,
         title: title,
-        tweet: false,
       },
       {
         headers: {
