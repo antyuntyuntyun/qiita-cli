@@ -4,6 +4,7 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
+import { defaultProjectName } from './commons/articlesDirectory';
 
 export async function newArticle(): Promise<number> {
   try {
@@ -22,7 +23,7 @@ export async function newArticle(): Promise<number> {
     );
 
     // 作業ディレクトリに記事用フォルダを作成
-    const articleBaseDir = 'articles';
+    const articleBaseDir = defaultProjectName;
     if (!fs.existsSync(articleBaseDir)) {
       fs.mkdirSync(articleBaseDir);
     }

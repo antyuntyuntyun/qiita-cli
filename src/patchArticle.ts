@@ -6,7 +6,10 @@ import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { QiitaPostResponse, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
+import {
+  loadArticleFiles,
+  defaultProjectName,
+} from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function patchArticle(
@@ -27,7 +30,7 @@ export async function patchArticle(
     console.log(
       'articleディレクトリ内の will_be_patched.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const articleBaseDir = 'articles';
+    const articleBaseDir = defaultProjectName;
 
     const filePathList: string[] = loadArticleFiles(articleBaseDir);
     const updateCandidateMatterMarkdowns: {

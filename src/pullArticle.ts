@@ -7,6 +7,7 @@ import path from 'path';
 import { QiitaPost } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
+import { defaultProjectName } from './commons/articlesDirectory';
 
 export async function pullArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -32,7 +33,7 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
     console.log('------------------------------------------');
     res.data.map((post) => {
       console.log(post.id + ': ' + post.title);
-      const dir: string = path.join('articles', post.title);
+      const dir: string = path.join(defaultProjectName, post.title);
       const filePath: string = path.join(dir, post.id + '.md');
       fs.mkdirSync(dir, { recursive: true });
       const frontMatter = `---

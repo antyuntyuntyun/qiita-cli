@@ -5,7 +5,10 @@ import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { QiitaPostResponse, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
+import {
+  loadArticleFiles,
+  defaultProjectName,
+} from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
@@ -24,7 +27,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const articleBaseDir = 'articles';
+    const articleBaseDir = defaultProjectName;
 
     const filePathList: string[] = loadArticleFiles(articleBaseDir);
     const newPostCandidateMatterMarkdowns: {
