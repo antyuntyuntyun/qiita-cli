@@ -1,12 +1,16 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import path from 'path';
+import matter from 'gray-matter';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
-import { QiitaPost } from '@/types/qiita';
+import { QiitaPost, User } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
+
+const itemsPerPage = 100;
+const maxPageNumber = 100;
 
 export async function pullArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -20,39 +24,36 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
 
     console.log('fetching article ... ');
 
-    const res = await axios.get<QiitaPost[]>(
-      'https://qiita.com/api/v2/authenticated_user/items',
-      {
-        headers: {
-          Authorization: `Bearer ${qiitaSetting.token}`,
-        },
+    const authenticatedUser = await loadAuthenticatedUser(options.token);
+    // 公開している記事数
+    const itemCount = authenticatedUser.data.items_count;
+    for (let page = 1; page <= maxPageNumber; ++page) {
+      const res = await loadPostItems(qiitaSetting.token, page);
+      // make .md file from res data
+      console.log('------------------------------------------');
+      for (const post of res.data) {
+        console.log(post.id + ': ' + post.title);
+        const dir: string = path.join(options.project, post.title);
+        const filePath: string = path.join(dir, post.id + '.md');
+        fs.mkdirSync(dir, { recursive: true });
+        const saveMarkdownFile = matter.stringify(post.body, {
+          id: post.id,
+          title: post.title,
+          created_at: post.created_at,
+          updated_at: post.updated_at,
+          tags: JSON.stringify(post.tags),
+          private: post.private,
+          url: post.url,
+          likes_count: post.likes_count,
+        });
+        // write frontMatter
+        fs.writeFileSync(filePath, saveMarkdownFile);
       }
-    );
-    // make .md file from res data
-    console.log('------------------------------------------');
-    res.data.map((post) => {
-      console.log(post.id + ': ' + post.title);
-      const dir: string = path.join(options.project, post.title);
-      const filePath: string = path.join(dir, post.id + '.md');
-      fs.mkdirSync(dir, { recursive: true });
-      const frontMatter = `---
-id: ${post.id}
-title: ${post.title}
-created_at: ${post.created_at}
-updated_at: ${post.updated_at}
-tags: ${String(JSON.stringify(post.tags))}
-private: ${String(post.private)}
-url: ${String(post.url)}
-likes_count: ${String(post.likes_count)}
----
-
-`;
-      // write frontMatter
-      fs.writeFileSync(filePath, frontMatter);
-      // write body
-      fs.appendFileSync(filePath, post.body);
-    });
-    console.log('------------------------------------------');
+      console.log('------------------------------------------');
+      if (itemCount <= page * itemsPerPage) {
+        break;
+      }
+    }
     // 処理完了メッセージ
     console.log(
       '\n' +
@@ -70,4 +71,30 @@ likes_count: ${String(post.likes_count)}
     return -1;
   }
   return 1;
+}
+
+async function loadAuthenticatedUser(
+  token: string
+): Promise<AxiosResponse<User>> {
+  return axios.get<User>('https://qiita.com/api/v2/authenticated_user', {
+    headers: { Authorization: ['Bearer', token].join(' ') },
+  });
+}
+
+async function loadPostItems(
+  token: string,
+  page: number
+): Promise<AxiosResponse<QiitaPost[]>> {
+  return axios.get<QiitaPost[]>(
+    'https://qiita.com/api/v2/authenticated_user/items',
+    {
+      params: {
+        per_page: itemsPerPage,
+        page: page,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 }
