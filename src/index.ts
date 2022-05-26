@@ -93,6 +93,10 @@ program
     `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
     defaultProjectName
   )
+  .option(
+    '-f, --file <uploadFilePath>',
+    `投稿したい記事のファイルを指定してください`
+  )
   .action(async (options: ExtraInputOptions) => {
     await postArticle(options);
   });
@@ -108,6 +112,10 @@ program
     '-p, --project <baseProjectPath>',
     `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
     defaultProjectName
+  )
+  .option(
+    '-f, --file <uploadFilePath>',
+    `投稿したい記事のファイルを指定してください`
   )
   .action(async (options: ExtraInputOptions) => {
     await patchArticle(options);
