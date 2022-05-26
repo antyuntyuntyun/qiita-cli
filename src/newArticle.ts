@@ -4,6 +4,7 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
+import matter from 'gray-matter';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function newArticle(options: ExtraInputOptions): Promise<number> {
@@ -53,12 +54,6 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
     } else {
       fs.mkdirSync(articleDir);
     }
-    const frontMatter = `---
-id: 
-title: ${answers.article_title}
-tags: [{"name":"qiita-cli","versions":[]}]
----  
-      `;
     const body = `
 ここから本文を書く
 # ${emoji.get('hatched_chick')} qiita cliによる自動生成です.
@@ -81,9 +76,13 @@ tags: [{"name":"C++","versions":[]},{"name":"AtCoder","versions":[]}]
 qiita cliはローカル上で新規記事/修正記事かどうかはファイル名により判断します.
 \`not_uploaded.md\`というファイル名はそのままに ${emoji.get('bow')}
 `;
-    // sync writ for frontMatter
-    fs.writeFileSync(articlePath, frontMatter);
-    fs.appendFileSync(articlePath, body);
+    const saveMarkdownFile = matter.stringify(body, {
+      id: '',
+      title: answers.article_title,
+      tags: [{ name: 'qiita-cli', versions: [] }],
+    });
+    // write frontMatter
+    fs.writeFileSync(articlePath, saveMarkdownFile);
 
     // 処理完了メッセージ
     console.log(
