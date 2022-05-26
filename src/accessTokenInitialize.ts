@@ -5,9 +5,7 @@ import open from 'open';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
-import path from 'path';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
-import { defaultProjectName } from './commons/articlesDirectory';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {
@@ -75,12 +73,6 @@ export async function accessTokenInitialize(): Promise<number> {
     fs.writeFileSync(filePath, qiitaUserJson);
     fs.appendFileSync(filePath, '\n');
 
-    // 作業ディレクトリに記事用フォルダを作成
-    const articleDir = defaultProjectName;
-    if (!fs.existsSync(articleDir)) {
-      fs.mkdirSync(articleDir);
-    }
-
     // 処理完了メッセージ
     console.log(
       '\n' +
@@ -91,8 +83,6 @@ export async function accessTokenInitialize(): Promise<number> {
     );
     console.log('Your token has been saved to the following path:');
     console.log('\n' + '\t' + filePath + '\n');
-    console.log(['Your', articleDir, 'folder:'].join(' '));
-    console.log('\n' + '\t' + path.join(process.cwd(), articleDir) + '\n');
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
