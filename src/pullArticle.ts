@@ -7,6 +7,7 @@ import matter from 'gray-matter';
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost, User } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
+import { writeFrontmatterMarkdownFileWithQiitaPost } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 const itemsPerPage = 100;
@@ -36,18 +37,7 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
         const dir: string = path.join(options.project, post.title);
         const filePath: string = path.join(dir, post.id + '.md');
         fs.mkdirSync(dir, { recursive: true });
-        const saveMarkdownFile = matter.stringify(post.body, {
-          id: post.id,
-          title: post.title,
-          created_at: post.created_at,
-          updated_at: post.updated_at,
-          tags: JSON.stringify(post.tags),
-          private: post.private,
-          url: post.url,
-          likes_count: post.likes_count,
-        });
-        // write frontMatter
-        fs.writeFileSync(filePath, saveMarkdownFile);
+        writeFrontmatterMarkdownFileWithQiitaPost(filePath, post);
       }
       console.log('------------------------------------------');
       if (itemCount <= page * itemsPerPage) {
