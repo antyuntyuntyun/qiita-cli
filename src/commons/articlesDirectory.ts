@@ -13,9 +13,12 @@ export function writeFrontmatterMarkdownFileWithQiitaPost(
   filePath: string,
   qiitaPost: QiitaPost
 ) {
+  const group_url_name = qiitaPost.group ? qiitaPost.group.url_name : null;
   const saveMarkdownFile = matter.stringify(qiitaPost.body, {
     id: qiitaPost.id,
     title: qiitaPost.title,
+    coediting: qiitaPost.coediting,
+    group_url_name: group_url_name,
     created_at: qiitaPost.created_at,
     updated_at: qiitaPost.updated_at,
     tags: qiitaPost.tags.map((tagObj) => {
