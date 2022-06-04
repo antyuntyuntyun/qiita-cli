@@ -18,7 +18,9 @@ export function writeFrontmatterMarkdownFileWithQiitaPost(
     title: qiitaPost.title,
     created_at: qiitaPost.created_at,
     updated_at: qiitaPost.updated_at,
-    tags: JSON.stringify(qiitaPost.tags),
+    tags: qiitaPost.tags.map((tagObj) => {
+      return { name: tagObj.name };
+    }),
     private: qiitaPost.private,
     url: qiitaPost.url,
     likes_count: qiitaPost.likes_count,
