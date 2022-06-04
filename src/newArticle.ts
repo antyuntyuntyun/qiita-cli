@@ -80,6 +80,7 @@ qiita cliはローカル上で新規記事/修正記事かどうかはファイ�
       id: '',
       title: answers.article_title,
       tags: [{ name: 'qiita-cli' }],
+      private: true,
     });
     // write frontMatter
     fs.writeFileSync(articlePath, saveMarkdownFile);
