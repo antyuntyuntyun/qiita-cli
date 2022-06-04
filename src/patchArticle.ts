@@ -60,9 +60,9 @@ export async function patchArticle(
       'https://qiita.com/api/v2/items/' + String(articleId),
       {
         body: articleContentsBody,
-        coediting: false,
-        group_url_name: 'dev',
-        private: false,
+        coediting: uploadMatterMarkdown.data.coediting,
+        group_url_name: uploadMatterMarkdown.data.group_url_name,
+        private: uploadMatterMarkdown.data.private || false,
         tags: tags,
         title: title,
       },
