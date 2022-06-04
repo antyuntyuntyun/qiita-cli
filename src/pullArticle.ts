@@ -2,7 +2,6 @@ import axios, { AxiosResponse } from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost, User } from '@/types/qiita';
