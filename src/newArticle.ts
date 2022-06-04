@@ -79,7 +79,7 @@ qiita cliはローカル上で新規記事/修正記事かどうかはファイ�
     const saveMarkdownFile = matter.stringify(body, {
       id: '',
       title: answers.article_title,
-      tags: [{ name: 'qiita-cli', versions: [] }],
+      tags: [{ name: 'qiita-cli' }],
     });
     // write frontMatter
     fs.writeFileSync(articlePath, saveMarkdownFile);
