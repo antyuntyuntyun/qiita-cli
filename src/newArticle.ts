@@ -82,7 +82,7 @@ qiita cliはローカル上で新規記事/修正記事かどうかはファイ�
       title: answers.article_title,
       tags: [{ name: 'qiita-cli' }],
       private: true,
-      hash: createHash('sha256').update(body).digest('hex')
+      hash: createHash('sha256').update(body).digest('hex'),
     });
     // write frontMatter
     fs.writeFileSync(articlePath, saveMarkdownFile);

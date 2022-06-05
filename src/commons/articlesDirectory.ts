@@ -28,7 +28,7 @@ export function writeFrontmatterMarkdownFileWithQiitaPost(
     private: qiitaPost.private,
     url: qiitaPost.url,
     likes_count: qiitaPost.likes_count,
-    hash: createHash('sha256').update(qiitaPost.body).digest('hex')
+    hash: createHash('sha256').update(qiitaPost.body).digest('hex'),
   });
   // write frontMatter
   fs.writeFileSync(filePath, saveMarkdownFile);
