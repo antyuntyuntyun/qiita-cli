@@ -7,4 +7,5 @@ export interface ExtraInputOptions {
   project: string;
   file: string;
   all: boolean;
+  tweet: boolean;
 }

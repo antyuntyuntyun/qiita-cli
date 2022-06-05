@@ -96,6 +96,7 @@ program
     `投稿したい記事のファイルを指定してください`
   )
   .option('--all', `プロジェクト以下に存在する全ての記事を投稿する`)
+  .option('--tweet', `新規投稿時にtwitterにも一緒に投稿する`)
   .action(async (options: ExtraInputOptions) => {
     await postArticle(options);
   });
