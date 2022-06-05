@@ -1,6 +1,7 @@
 import fg from 'fast-glob';
 import fs from 'fs';
 import matter from 'gray-matter';
+import { createHash } from 'crypto';
 import { QiitaPost } from '~/types/qiita';
 
 export function loadArticleFiles(rootDir: string): string[] {
@@ -27,6 +28,7 @@ export function writeFrontmatterMarkdownFileWithQiitaPost(
     private: qiitaPost.private,
     url: qiitaPost.url,
     likes_count: qiitaPost.likes_count,
+    hash: createHash('sha256').update(qiitaPost.body).digest('hex')
   });
   // write frontMatter
   fs.writeFileSync(filePath, saveMarkdownFile);
