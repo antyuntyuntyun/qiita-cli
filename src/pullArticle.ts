@@ -1,16 +1,17 @@
-import axios, { AxiosResponse } from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
-import { QiitaPost, User } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
 import { loadArticleFiles, Article } from './commons/articles';
-
-const itemsPerPage = 100;
-const maxPageNumber = 100;
+import {
+  itemsPerPage,
+  maxPageNumber,
+  loadAuthenticatedUser,
+  loadPostItems,
+} from './commons/qiitaApis';
 
 export async function pullArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -86,30 +87,4 @@ function loadCurrentIdToArticle(
     }
   }
   return currentIdFileArticles;
-}
-
-async function loadAuthenticatedUser(
-  token: string
-): Promise<AxiosResponse<User>> {
-  return axios.get<User>('https://qiita.com/api/v2/authenticated_user', {
-    headers: { Authorization: ['Bearer', token].join(' ') },
-  });
-}
-
-async function loadPostItems(
-  token: string,
-  page: number
-): Promise<AxiosResponse<QiitaPost[]>> {
-  return axios.get<QiitaPost[]>(
-    'https://qiita.com/api/v2/authenticated_user/items',
-    {
-      params: {
-        per_page: itemsPerPage,
-        page: page,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
 }
