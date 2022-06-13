@@ -1,7 +1,6 @@
 import fg from 'fast-glob';
 import fs from 'fs';
 import matter from 'gray-matter';
-import { createHash } from 'crypto';
 import { QiitaPost } from '~/types/qiita';
 
 export function loadArticleFiles(rootDir: string): string[] {
@@ -13,7 +12,7 @@ export const defaultProjectName = 'articles';
 export function writeFrontmatterMarkdownFileWithQiitaPost(
   filePath: string,
   qiitaPost: QiitaPost
-) {
+): Promise<void> {
   const group_url_name = qiitaPost.group ? qiitaPost.group.url_name : null;
   const saveMarkdownFile = matter.stringify(qiitaPost.body, {
     id: qiitaPost.id,
@@ -31,5 +30,5 @@ export function writeFrontmatterMarkdownFileWithQiitaPost(
     hash: createHash('sha256').update(qiitaPost.body).digest('hex'),
   });
   // write frontMatter
-  fs.writeFileSync(filePath, saveMarkdownFile);
+  return fs.promises.writeFile(filePath, saveMarkdownFile);
 }

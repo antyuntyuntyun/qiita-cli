@@ -6,11 +6,9 @@ import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
 import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import {
-  loadArticleFiles,
-  writeFrontmatterMarkdownFileWithQiitaPost,
-} from './commons/articlesDirectory';
+import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
+import { Article } from './commons/article';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -54,7 +52,10 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
       return 1;
     }
 
+    const writeFilePromises: Promise<void>[] = [];
     for (const postFilePath of uploadFiles) {
+      const article = new Article(postFilePath);
+
       const uploadMatterMarkdown: GrayMatterFile<string> = matter(
         fs.readFileSync(postFilePath, 'utf-8')
       );
@@ -66,7 +67,43 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
       // 記事本文
       const articleContentsBody = uploadMatterMarkdown.content;
 
-      if (uploadMatterMarkdown.data.id) {
+      if (article.isNew()) {
+        const res = await axios.post<QiitaPost>(
+          'https://qiita.com/api/v2/items/',
+          {
+            body: articleContentsBody,
+            coediting: uploadMatterMarkdown.data.coediting,
+            group_url_name: uploadMatterMarkdown.data.group_url_name,
+            private: uploadMatterMarkdown.data.private || false,
+            tags: tags,
+            title: title,
+            tweet: options.tweet,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${qiitaSetting.token}`,
+            },
+          }
+        );
+        if (res.status === 201) {
+          // 処理完了メッセージ
+          console.log(
+            '\n' +
+              emoji.get('sparkles') +
+              ' New Article "' +
+              title +
+              '" is created' +
+              emoji.get('sparkles') +
+              '\n'
+          );
+          writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
+        } else {
+          // 記事投稿失敗
+          console.log(
+            '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+          );
+        }
+      } else {
         // 記事id
         const articleId: string = uploadMatterMarkdown.data.id;
         const beforeHash = uploadMatterMarkdown.data.hash;
@@ -104,53 +141,16 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
               emoji.get('sparkles') +
               '\n'
           );
-          writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, res.data);
+          writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
         } else {
           // 記事投稿失敗
           console.log(
             '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
           );
         }
-      } else {
-        const res = await axios.post<QiitaPost>(
-          'https://qiita.com/api/v2/items/',
-          {
-            body: articleContentsBody,
-            coediting: uploadMatterMarkdown.data.coediting,
-            group_url_name: uploadMatterMarkdown.data.group_url_name,
-            private: uploadMatterMarkdown.data.private || false,
-            tags: tags,
-            title: title,
-            tweet: options.tweet,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${qiitaSetting.token}`,
-            },
-          }
-        );
-        if (res.status === 201) {
-          // 記事投稿成功
-          const postData = res.data;
-          // 処理完了メッセージ
-          console.log(
-            '\n' +
-              emoji.get('sparkles') +
-              ' New Article "' +
-              title +
-              '" is created' +
-              emoji.get('sparkles') +
-              '\n'
-          );
-          writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, postData);
-        } else {
-          // 記事投稿失敗
-          console.log(
-            '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-          );
-        }
       }
     }
+    await Promise.all(writeFilePromises);
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
