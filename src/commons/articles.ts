@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fg from 'fast-glob';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
 import { Tag, QiitaPost } from '~/types/qiita';
@@ -36,6 +37,7 @@ export class Article {
       private: matterMarkdown.data.private,
       tags: matterMarkdown.data.tags,
       hash: matterMarkdown.data.hash,
+      body: matterMarkdown.content,
     };
   }
 
@@ -77,4 +79,5 @@ interface ArticleProperty {
   url?: string;
   likes_count?: number;
   hash: string;
+  body: string;
 }

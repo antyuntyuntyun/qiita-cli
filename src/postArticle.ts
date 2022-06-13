@@ -1,10 +1,8 @@
 import axios from 'axios';
 import emoji from 'node-emoji';
-import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
-import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
-import { QiitaPost, Tag } from '~/types/qiita';
+import { QiitaPost } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
 import { loadArticleFiles, Article } from './commons/articles';
@@ -54,28 +52,18 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     const writeFilePromises: Promise<void>[] = [];
     for (const postFilePath of uploadFiles) {
       const article = new Article(postFilePath);
-
-      const uploadMatterMarkdown: GrayMatterFile<string> = matter(
-        fs.readFileSync(postFilePath, 'utf-8')
-      );
-
-      // 記事タイトル
-      const title: string = uploadMatterMarkdown.data.title || '';
-      const tags: Tag[] = uploadMatterMarkdown.data.tags || [];
-
-      // 記事本文
-      const articleContentsBody = uploadMatterMarkdown.content;
-
+      const articleProperty = article.getProperty();
+      if (!articleProperty) continue;
       if (article.isNew()) {
         const res = await axios.post<QiitaPost>(
           'https://qiita.com/api/v2/items/',
           {
-            body: articleContentsBody,
-            coediting: uploadMatterMarkdown.data.coediting,
-            group_url_name: uploadMatterMarkdown.data.group_url_name,
-            private: uploadMatterMarkdown.data.private || false,
-            tags: tags,
-            title: title,
+            body: articleProperty.body,
+            coediting: articleProperty.coediting,
+            group_url_name: articleProperty.group_url_name,
+            private: articleProperty.private,
+            tags: articleProperty.tags,
+            title: articleProperty.title,
             tweet: options.tweet,
           },
           {
@@ -90,7 +78,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
             '\n' +
               emoji.get('sparkles') +
               ' New Article "' +
-              title +
+              articleProperty.title +
               '" is created' +
               emoji.get('sparkles') +
               '\n'
@@ -104,10 +92,10 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         }
       } else {
         // 記事id
-        const articleId: string = uploadMatterMarkdown.data.id;
-        const beforeHash = uploadMatterMarkdown.data.hash;
+        const articleId: string = articleProperty.id;
+        const beforeHash = articleProperty.hash;
         const currentHash = createHash('sha256')
-          .update(articleContentsBody)
+          .update(articleProperty.body)
           .digest('hex');
         // ハッシュ値が同じ=変更がないということなのでその場合は更新しないで次に行く
         if (beforeHash === currentHash) continue;
@@ -115,12 +103,12 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         const res = await axios.patch<QiitaPost>(
           'https://qiita.com/api/v2/items/' + String(articleId),
           {
-            body: articleContentsBody,
-            coediting: uploadMatterMarkdown.data.coediting,
-            group_url_name: uploadMatterMarkdown.data.group_url_name,
-            private: uploadMatterMarkdown.data.private || false,
-            tags: tags,
-            title: title,
+            body: articleProperty.body,
+            coediting: articleProperty.coediting,
+            group_url_name: articleProperty.group_url_name,
+            private: articleProperty.private || false,
+            tags: articleProperty.tags,
+            title: articleProperty.title,
           },
           {
             headers: {
@@ -135,7 +123,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
             '\n' +
               emoji.get('sparkles') +
               ' Article "' +
-              String(title) +
+              articleProperty.title +
               '" is patched' +
               emoji.get('sparkles') +
               '\n'
