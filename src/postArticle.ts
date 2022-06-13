@@ -23,22 +23,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const uploadFiles: Set<string> = new Set<string>();
-    if (options.all) {
-      const allFiles = loadArticleFiles(options.project);
-      for (const file of allFiles) {
-        uploadFiles.add(file);
-      }
-    } else if (options.file) {
-      uploadFiles.add(options.file);
-    } else {
-      const selectedFile = await selectPostFilePath(
-        loadArticleFiles(options.project)
-      );
-      if (selectedFile) {
-        uploadFiles.add(selectedFile);
-      }
-    }
+    const uploadFiles: Set<string> = await buildWillUploadFilePathSet(options);
     if (uploadFiles.size <= 0) {
       console.log(
         '\n' +
@@ -147,6 +132,28 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     return -1;
   }
   return 1;
+}
+
+async function buildWillUploadFilePathSet(
+  options: ExtraInputOptions
+): Promise<Set<string>> {
+  const uploadFiles: Set<string> = new Set<string>();
+  if (options.all) {
+    const allFiles = loadArticleFiles(options.project);
+    for (const file of allFiles) {
+      uploadFiles.add(file);
+    }
+  } else if (options.file) {
+    uploadFiles.add(options.file);
+  } else {
+    const selectedFile = await selectPostFilePath(
+      loadArticleFiles(options.project)
+    );
+    if (selectedFile) {
+      uploadFiles.add(selectedFile);
+    }
+  }
+  return uploadFiles;
 }
 
 async function selectPostFilePath(
