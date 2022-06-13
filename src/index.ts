@@ -6,7 +6,7 @@ import { pullArticle } from './pullArticle';
 import packageJson from '../package.json';
 import { postArticle } from './postArticle';
 import { program } from 'commander';
-import { defaultProjectName } from './commons/articlesDirectory';
+import { defaultProjectName } from './commons/articles';
 import { ExtraInputOptions } from '~/types/command';
 
 const mainUsage = `Command:
