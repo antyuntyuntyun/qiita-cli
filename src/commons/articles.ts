@@ -3,6 +3,12 @@ import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
 import { Tag, QiitaPost } from '~/types/qiita';
 
+export function loadArticleFiles(rootDir: string): string[] {
+  return fg.sync([rootDir, '**', '*.md'].join('/'), { dot: true });
+}
+
+export const defaultProjectName = 'articles';
+
 export class Article {
   private filePath: string;
   private property: ArticleProperty | null = null;

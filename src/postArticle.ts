@@ -6,9 +6,8 @@ import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
 import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
-import { Article } from './commons/article';
+import { loadArticleFiles, Article } from './commons/articles';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {

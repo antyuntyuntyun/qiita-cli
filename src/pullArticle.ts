@@ -6,9 +6,8 @@ import path from 'path';
 // import qiitaSetting from '../qiita.json';
 import { QiitaPost, User } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
-import { Article } from './commons/article';
+import { loadArticleFiles, Article } from './commons/articles';
 
 const itemsPerPage = 100;
 const maxPageNumber = 100;
@@ -26,7 +25,6 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
     console.log('fetching article ... ');
 
     const currentIdArticles = loadCurrentIdToArticle(options.project);
-
     const authenticatedUser = await loadAuthenticatedUser(options.token);
     // 公開している記事数
     const itemCount = authenticatedUser.data.items_count;
