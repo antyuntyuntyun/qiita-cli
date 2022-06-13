@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-// import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
