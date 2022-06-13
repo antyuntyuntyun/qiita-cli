@@ -2,7 +2,8 @@ import fs from 'fs';
 import fg from 'fast-glob';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
-import { Tag, QiitaPost } from '~/types/qiita';
+import { QiitaPost } from '~/types/qiita';
+import { ArticleProperty } from '~/types/article';
 
 export function loadArticleFiles(rootDir: string): string[] {
   return fg.sync([rootDir, '**', '*.md'].join('/'), { dot: true });
@@ -65,19 +66,4 @@ export class Article {
     // write frontMatter
     return fs.promises.writeFile(this.filePath, saveMarkdownFile);
   }
-}
-
-interface ArticleProperty {
-  id: string;
-  title: string;
-  private: boolean;
-  coediting?: string;
-  group_url_name?: string;
-  tags: Tag[];
-  created_at?: string;
-  updated_at?: string;
-  url?: string;
-  likes_count?: number;
-  hash: string;
-  body: string;
 }

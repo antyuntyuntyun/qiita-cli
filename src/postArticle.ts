@@ -1,11 +1,10 @@
-import axios from 'axios';
 import emoji from 'node-emoji';
 import { prompt, QuestionCollection } from 'inquirer';
 import { createHash } from 'crypto';
-import { QiitaPost } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
 import { loadArticleFiles, Article } from './commons/articles';
+import { postItem, patchItem } from './commons/qiitaApis';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -40,22 +39,10 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
       const articleProperty = article.getProperty();
       if (!articleProperty) continue;
       if (article.isNew()) {
-        const res = await axios.post<QiitaPost>(
-          'https://qiita.com/api/v2/items/',
-          {
-            body: articleProperty.body,
-            coediting: articleProperty.coediting,
-            group_url_name: articleProperty.group_url_name,
-            private: articleProperty.private,
-            tags: articleProperty.tags,
-            title: articleProperty.title,
-            tweet: options.tweet,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${qiitaSetting.token}`,
-            },
-          }
+        const res = await postItem(
+          qiitaSetting.token,
+          articleProperty,
+          options.tweet
         );
         if (res.status === 201) {
           // 処理完了メッセージ
@@ -76,8 +63,6 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
           );
         }
       } else {
-        // 記事id
-        const articleId: string = articleProperty.id;
         const beforeHash = articleProperty.hash;
         const currentHash = createHash('sha256')
           .update(articleProperty.body)
@@ -85,22 +70,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         // ハッシュ値が同じ=変更がないということなのでその場合は更新しないで次に行く
         if (beforeHash === currentHash) continue;
 
-        const res = await axios.patch<QiitaPost>(
-          'https://qiita.com/api/v2/items/' + String(articleId),
-          {
-            body: articleProperty.body,
-            coediting: articleProperty.coediting,
-            group_url_name: articleProperty.group_url_name,
-            private: articleProperty.private || false,
-            tags: articleProperty.tags,
-            title: articleProperty.title,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${qiitaSetting.token}`,
-            },
-          }
-        );
+        const res = await patchItem(qiitaSetting.token, articleProperty);
         if (res.status === 200) {
           // 記事投稿成功
           // 処理完了メッセージ

@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { QiitaPost, User } from '@/types/qiita';
+import { ArticleProperty } from '@/types/article';
 
 export const itemsPerPage = 100;
 export const maxPageNumber = 100;
@@ -23,6 +24,52 @@ export async function loadPostItems(
         per_page: itemsPerPage,
         page: page,
       },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}
+
+export async function postItem(
+  token: string,
+  articleProperty: ArticleProperty,
+  tweet: boolean
+): Promise<AxiosResponse<QiitaPost>> {
+  return axios.post<QiitaPost>(
+    'https://qiita.com/api/v2/items/',
+    {
+      body: articleProperty.body,
+      coediting: articleProperty.coediting,
+      group_url_name: articleProperty.group_url_name,
+      private: articleProperty.private,
+      tags: articleProperty.tags,
+      title: articleProperty.title,
+      tweet: tweet,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}
+
+export async function patchItem(
+  token: string,
+  articleProperty: ArticleProperty
+): Promise<AxiosResponse<QiitaPost>> {
+  return axios.patch<QiitaPost>(
+    'https://qiita.com/api/v2/items/' + String(articleProperty.id),
+    {
+      body: articleProperty.body,
+      coediting: articleProperty.coediting,
+      group_url_name: articleProperty.group_url_name,
+      private: articleProperty.private,
+      tags: articleProperty.tags,
+      title: articleProperty.title,
+    },
+    {
       headers: {
         Authorization: `Bearer ${token}`,
       },
