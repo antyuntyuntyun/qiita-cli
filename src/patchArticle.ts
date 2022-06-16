@@ -3,15 +3,9 @@ import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
-import remarkExtractFrontmatter from 'remark-extract-frontmatter';
-import remarkFrontmatter from 'remark-frontmatter';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import rehypeStringify from 'rehype-stringify';
-import yaml from 'yaml';
-import unified from 'unified';
 import path from 'path';
-import { QiitaPostResponse, Tag, FrontMatterParseResult } from '~/types/qiita';
+import matter, { GrayMatterFile } from 'gray-matter';
+import { QiitaPostResponse, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
@@ -74,34 +68,14 @@ export async function patchArticle(
     ).find((item) => item.includes(answers.uploadArticles));
 
     // front-matter付きmarkdownのパース
-    const inputArticle = fs.readFileSync(String(uploadArticlePath));
-    const processor = unified()
-      .use(remarkParse)
-      .use(remarkFrontmatter, [
-        {
-          type: 'yaml',
-          marker: '-',
-          anywhere: false, // ファイルの冒頭に Front Matter がある前提で探索する
-        },
-      ])
-      .use(remarkExtractFrontmatter, {
-        yaml: yaml.parse,
-        name: 'frontMatter', // result.data 配下のキー名を決める
-      })
-      .use(remarkRehype)
-      .use(rehypeStringify);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any | FrontMatterParseResult = await processor.process(
-      inputArticle
+    const parsedMatterMarkdown: GrayMatterFile<string> = matter(
+      fs.readFileSync(String(uploadArticlePath), 'utf-8')
     );
-    //   console.log(result);
 
     // 記事タイトル
+    const title: string = parsedMatterMarkdown.data.title || '';
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const title: unknown | string = result.data.frontMatter.title;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const tags: unknown | Tag[] = result.data.frontMatter.tags;
+    const tags: unknown | Tag[] = parsedMatterMarkdown.data.tags;
 
     if (!tags) {
       console.log(
@@ -113,18 +87,11 @@ export async function patchArticle(
     }
 
     // 記事本文
-    // bufferでなく文字列として読み込み
-    const articleContents = fs.readFileSync(String(uploadArticlePath), 'utf-8');
-    // フロント・マターを区切り文字で検索し、フロント・マター以降を抽出
-    const startIndex = articleContents.indexOf(
-      '---',
-      articleContents.indexOf('---') + 1
-    );
-    const articleContentsBody = articleContents.substring(startIndex + 4);
+    const articleContentsBody = parsedMatterMarkdown.content;
 
     // 記事id
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const articleId: unknown | string = result.data.frontMatter.id;
+    const articleId: unknown | string = parsedMatterMarkdown.data.id;
 
     const res = await axios.patch<QiitaPostResponse>(
       'https://qiita.com/api/v2/items/' + String(articleId),
