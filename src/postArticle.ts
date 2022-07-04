@@ -24,7 +24,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const articleBaseDir = 'articles';
+    const articleBaseDir = options.project;
 
     const filePathList: string[] = loadArticleFiles(articleBaseDir);
     const newPostCandidateMatterMarkdowns: {

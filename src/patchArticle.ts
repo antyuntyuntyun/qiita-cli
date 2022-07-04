@@ -27,7 +27,7 @@ export async function patchArticle(
     console.log(
       'articleディレクトリ内の will_be_patched.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const articleBaseDir = 'articles';
+    const articleBaseDir = options.project;
 
     const filePathList: string[] = loadArticleFiles(articleBaseDir);
     const updateCandidateMatterMarkdowns: {

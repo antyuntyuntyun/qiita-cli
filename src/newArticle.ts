@@ -4,8 +4,9 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
+import { ExtraInputOptions } from '~/types/command';
 
-export async function newArticle(): Promise<number> {
+export async function newArticle(options: ExtraInputOptions): Promise<number> {
   try {
     console.log('Qiita 記事新規作成\n');
 
@@ -22,7 +23,7 @@ export async function newArticle(): Promise<number> {
     );
 
     // 作業ディレクトリに記事用フォルダを作成
-    const articleBaseDir = 'articles';
+    const articleBaseDir = options.project;
     if (!fs.existsSync(articleBaseDir)) {
       fs.mkdirSync(articleBaseDir);
     }
