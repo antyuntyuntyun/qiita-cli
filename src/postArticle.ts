@@ -1,13 +1,9 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-// import axios from 'axios';
 import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
-import { Answers, prompt, QuestionCollection } from 'inquirer';
-import path from 'path';
+import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { QiitaPostResponse, Tag } from '~/types/qiita';
-import { getArticle } from './getArticle';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
@@ -30,24 +26,26 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     );
     const articleBaseDir = 'articles';
 
-    // ファイル名がnot_uploaded.mdとなっているものを取得
-    const filePathList: string[] = loadArticleFiles(articleBaseDir).filter(
-      (item) => item.includes('not_uploaded.md')
-    );
+    const filePathList: string[] = loadArticleFiles(articleBaseDir);
+    const newPostCandidateMatterMarkdowns: {
+      [s: string]: GrayMatterFile<string>;
+    } = {};
+    for (const filePath of filePathList) {
+      const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
+      if (!parsedMatter.data.id && parsedMatter.data.title) {
+        newPostCandidateMatterMarkdowns[filePath] = parsedMatter;
+      }
+    }
 
-    if (filePathList.length === 0) {
+    if (Object.keys(newPostCandidateMatterMarkdowns).length === 0) {
       console.log(
         '\n' +
           emoji.get('disappointed') +
-          ' There are no "not_uploaded.md" files\n'
+          ' There are no "will_be_patched.md" files\n'
       );
       console.log(emoji.get('hatched_chick') + ' 処理を中止しました\n');
       return 1;
     }
-    const articleNameList: string[] = filePathList.map((item) => {
-      // mdファイルの上に記事名が記載されているフォルダが存在する想定
-      return path.basename(path.dirname(item));
-    });
 
     //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
     const inputQuestions: QuestionCollection = [
@@ -55,41 +53,30 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         type: 'list',
         message: 'アップロードする記事を選択してください: ',
         name: 'uploadArticles',
-        choices: articleNameList,
+        choices: Object.keys(newPostCandidateMatterMarkdowns),
       },
     ];
-    const answers: Answers | { uploadArticles: string } = await prompt(
-      inputQuestions
-    );
+    const answers = await prompt(inputQuestions);
 
+    const postFilePath = answers.uploadArticles;
     //   TODO: 複数選択対応
-    const uploadArticlePath: string | undefined = loadArticleFiles(
-      articleBaseDir
-    ).find((item) => item.includes(answers.uploadArticles));
+    const uploadMatterMarkdown: GrayMatterFile<string> | undefined =
+      newPostCandidateMatterMarkdowns[postFilePath];
 
-    const parsedMatterMarkdown: GrayMatterFile<string> = matter(
-      fs.readFileSync(String(uploadArticlePath), 'utf-8')
-    );
-
-    // 記事タイトル
-    const title: string = parsedMatterMarkdown.data.title || '';
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const tags: unknown | Tag[] = parsedMatterMarkdown.data.tags;
-
-    if (!tags) {
+    if (!uploadMatterMarkdown) {
+      // 記事投稿失敗
       console.log(
-        '\n' +
-          emoji.get('disappointed') +
-          ' 選択した記事にタグが設定されていません.\n記事を投稿するには一つ以上タグが設定されている必要があります.\n'
+        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
       );
       return -1;
     }
 
-    // 記事本文
-    const articleContentsBody = parsedMatterMarkdown.content;
+    // 記事タイトル
+    const title: string = uploadMatterMarkdown.data.title || '';
+    const tags: Tag[] = uploadMatterMarkdown.data.tags || [];
 
-    // 記事投稿成功時に生成される記事idを格納する
-    let articleId = '';
+    // 記事本文
+    const articleContentsBody = uploadMatterMarkdown.content;
 
     const res = await axios.post<QiitaPostResponse>(
       'https://qiita.com/api/v2/items/',
@@ -108,21 +95,30 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         },
       }
     );
-    // console.log(res);
     if (res.status === 201) {
       // 記事投稿成功
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      articleId = String(res.data.id);
+      const postData = res.data;
       // 処理完了メッセージ
       console.log(
         '\n' +
           emoji.get('sparkles') +
           ' New Article "' +
-          String(title) +
+          title +
           '" is created' +
           emoji.get('sparkles') +
           '\n'
       );
+      const renewalPost = matter.stringify(postData.body, {
+        id: postData.id,
+        title: postData.title,
+        created_at: postData.created_at,
+        updated_at: postData.updated_at,
+        tags: JSON.stringify(postData.tags),
+        private: postData.private,
+        url: postData.url,
+        likes_count: postData.likes_count,
+      });
+      fs.writeFileSync(postFilePath, renewalPost);
     } else {
       // 記事投稿失敗
       console.log(
@@ -130,10 +126,6 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
       );
       return -1;
     }
-    // 投稿した記事を取得
-    await getArticle(articleId);
-    // 投稿前状態のファイルを削除
-    fs.unlinkSync(String(uploadArticlePath));
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
