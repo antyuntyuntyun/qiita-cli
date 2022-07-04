@@ -3,9 +3,12 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
-import { QiitaPostResponse, Tag } from '~/types/qiita';
+import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
+import {
+  loadArticleFiles,
+  writeFrontmatterMarkdownFileWithQiitaPost,
+} from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
@@ -24,52 +27,22 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const articleBaseDir = 'articles';
-
-    const filePathList: string[] = loadArticleFiles(articleBaseDir);
-    const newPostCandidateMatterMarkdowns: {
-      [s: string]: GrayMatterFile<string>;
-    } = {};
-    for (const filePath of filePathList) {
-      const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
-      if (!parsedMatter.data.id && parsedMatter.data.title) {
-        newPostCandidateMatterMarkdowns[filePath] = parsedMatter;
-      }
-    }
-
-    if (Object.keys(newPostCandidateMatterMarkdowns).length === 0) {
+    const postFilePath = options.file
+      ? options.file
+      : await selectPostFilePath(options.project);
+    if (!postFilePath) {
       console.log(
         '\n' +
           emoji.get('disappointed') +
-          ' There are no "will_be_patched.md" files\n'
+          ' There are no "not_uploaded.md" files\n'
       );
       console.log(emoji.get('hatched_chick') + ' 処理を中止しました\n');
       return 1;
     }
 
-    //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
-    const inputQuestions: QuestionCollection = [
-      {
-        type: 'list',
-        message: 'アップロードする記事を選択してください: ',
-        name: 'uploadArticles',
-        choices: Object.keys(newPostCandidateMatterMarkdowns),
-      },
-    ];
-    const answers = await prompt(inputQuestions);
-
-    const postFilePath = answers.uploadArticles;
-    //   TODO: 複数選択対応
-    const uploadMatterMarkdown: GrayMatterFile<string> | undefined =
-      newPostCandidateMatterMarkdowns[postFilePath];
-
-    if (!uploadMatterMarkdown) {
-      // 記事投稿失敗
-      console.log(
-        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-      );
-      return -1;
-    }
+    const uploadMatterMarkdown: GrayMatterFile<string> = matter(
+      fs.readFileSync(postFilePath, 'utf-8')
+    );
 
     // 記事タイトル
     const title: string = uploadMatterMarkdown.data.title || '';
@@ -78,53 +51,85 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     // 記事本文
     const articleContentsBody = uploadMatterMarkdown.content;
 
-    const res = await axios.post<QiitaPostResponse>(
-      'https://qiita.com/api/v2/items/',
-      {
-        body: articleContentsBody,
-        coediting: false,
-        group_url_name: 'dev',
-        private: false,
-        tags: tags,
-        title: title,
-        tweet: false,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${qiitaSetting.token}`,
+    if (uploadMatterMarkdown.data.id) {
+      // 記事id
+      const articleId: string = uploadMatterMarkdown.data.id;
+
+      const res = await axios.patch<QiitaPost>(
+        'https://qiita.com/api/v2/items/' + String(articleId),
+        {
+          body: articleContentsBody,
+          coediting: uploadMatterMarkdown.data.coediting,
+          group_url_name: uploadMatterMarkdown.data.group_url_name,
+          private: uploadMatterMarkdown.data.private || false,
+          tags: tags,
+          title: title,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${qiitaSetting.token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        // 記事投稿成功
+        // 処理完了メッセージ
+        console.log(
+          '\n' +
+            emoji.get('sparkles') +
+            ' Article "' +
+            String(title) +
+            '" is patched' +
+            emoji.get('sparkles') +
+            '\n'
+        );
+        writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, res.data);
+      } else {
+        // 記事投稿失敗
+        console.log(
+          '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
+        );
+        return -1;
       }
-    );
-    if (res.status === 201) {
-      // 記事投稿成功
-      const postData = res.data;
-      // 処理完了メッセージ
-      console.log(
-        '\n' +
-          emoji.get('sparkles') +
-          ' New Article "' +
-          title +
-          '" is created' +
-          emoji.get('sparkles') +
-          '\n'
-      );
-      const renewalPost = matter.stringify(postData.body, {
-        id: postData.id,
-        title: postData.title,
-        created_at: postData.created_at,
-        updated_at: postData.updated_at,
-        tags: JSON.stringify(postData.tags),
-        private: postData.private,
-        url: postData.url,
-        likes_count: postData.likes_count,
-      });
-      fs.writeFileSync(postFilePath, renewalPost);
     } else {
-      // 記事投稿失敗
-      console.log(
-        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+      const res = await axios.post<QiitaPost>(
+        'https://qiita.com/api/v2/items/',
+        {
+          body: articleContentsBody,
+          coediting: uploadMatterMarkdown.data.coediting,
+          group_url_name: uploadMatterMarkdown.data.group_url_name,
+          private: uploadMatterMarkdown.data.private || false,
+          tags: tags,
+          title: title,
+          tweet: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${qiitaSetting.token}`,
+          },
+        }
       );
-      return -1;
+      if (res.status === 201) {
+        // 記事投稿成功
+        const postData = res.data;
+        // 処理完了メッセージ
+        console.log(
+          '\n' +
+            emoji.get('sparkles') +
+            ' New Article "' +
+            title +
+            '" is created' +
+            emoji.get('sparkles') +
+            '\n'
+        );
+        writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, postData);
+      } else {
+        // 記事投稿失敗
+        console.log(
+          '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+        );
+        return -1;
+      }
     }
     return 0;
   } catch (e) {
@@ -135,4 +140,25 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     return -1;
   }
   return 1;
+}
+
+async function selectPostFilePath(rootDir: string): Promise<string> {
+  const filePathList: string[] = loadArticleFiles(rootDir);
+
+  if (filePathList.length === 0) {
+    return '';
+  }
+
+  //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
+  const inputQuestions: QuestionCollection = [
+    {
+      type: 'list',
+      message: 'アップロードする記事を選択してください: ',
+      name: 'uploadArticles',
+      choices: filePathList,
+    },
+  ];
+  const answers = await prompt(inputQuestions);
+
+  return answers.uploadArticles;
 }
