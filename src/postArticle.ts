@@ -24,52 +24,22 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const articleBaseDir = 'articles';
-
-    const filePathList: string[] = loadArticleFiles(articleBaseDir);
-    const newPostCandidateMatterMarkdowns: {
-      [s: string]: GrayMatterFile<string>;
-    } = {};
-    for (const filePath of filePathList) {
-      const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
-      if (!parsedMatter.data.id && parsedMatter.data.title) {
-        newPostCandidateMatterMarkdowns[filePath] = parsedMatter;
-      }
-    }
-
-    if (Object.keys(newPostCandidateMatterMarkdowns).length === 0) {
+    const postFilePath = options.file
+      ? options.file
+      : await selectPostFilePath(options.project);
+    if (!postFilePath) {
       console.log(
         '\n' +
           emoji.get('disappointed') +
-          ' There are no "will_be_patched.md" files\n'
+          ' There are no "not_uploaded.md" files\n'
       );
       console.log(emoji.get('hatched_chick') + ' 処理を中止しました\n');
       return 1;
     }
 
-    //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
-    const inputQuestions: QuestionCollection = [
-      {
-        type: 'list',
-        message: 'アップロードする記事を選択してください: ',
-        name: 'uploadArticles',
-        choices: Object.keys(newPostCandidateMatterMarkdowns),
-      },
-    ];
-    const answers = await prompt(inputQuestions);
-
-    const postFilePath = answers.uploadArticles;
-    //   TODO: 複数選択対応
-    const uploadMatterMarkdown: GrayMatterFile<string> | undefined =
-      newPostCandidateMatterMarkdowns[postFilePath];
-
-    if (!uploadMatterMarkdown) {
-      // 記事投稿失敗
-      console.log(
-        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-      );
-      return -1;
-    }
+    const uploadMatterMarkdown: GrayMatterFile<string> = matter(
+      fs.readFileSync(postFilePath, 'utf-8')
+    );
 
     // 記事タイトル
     const title: string = uploadMatterMarkdown.data.title || '';
@@ -135,4 +105,32 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     return -1;
   }
   return 1;
+}
+
+async function selectPostFilePath(rootDir: string): Promise<string> {
+  const filePathList: string[] = loadArticleFiles(rootDir);
+  const postCandidateFilePathes: string[] = [];
+  for (const filePath of filePathList) {
+    const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
+    if (!parsedMatter.data.id && parsedMatter.data.title) {
+      postCandidateFilePathes.push(filePath);
+    }
+  }
+
+  if (postCandidateFilePathes.length === 0) {
+    return '';
+  }
+
+  //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
+  const inputQuestions: QuestionCollection = [
+    {
+      type: 'list',
+      message: 'アップロードする記事を選択してください: ',
+      name: 'uploadArticles',
+      choices: postCandidateFilePathes,
+    },
+  ];
+  const answers = await prompt(inputQuestions);
+
+  return answers.uploadArticles;
 }

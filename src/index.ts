@@ -7,6 +7,7 @@ import packageJson from '../package.json';
 import { postArticle } from './postArticle';
 import { patchArticle } from './patchArticle';
 import { program } from 'commander';
+import { defaultProjectName } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 const mainUsage: string = `Command:
@@ -59,6 +60,11 @@ program
     '-t, --token <accessToken>',
     'Qiitaで発行したaccessTokenを入力してください'
   )
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
   .action(async (options: ExtraInputOptions) => {
     await pullArticle(options);
   });
@@ -66,8 +72,13 @@ program
 program
   .command('new:article')
   .description('新しい記事を追加')
-  .action(async () => {
-    await newArticle();
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
+  .action(async (options: ExtraInputOptions) => {
+    await newArticle(options);
   });
 
 program
@@ -76,6 +87,15 @@ program
   .option(
     '-t, --token <accessToken>',
     'Qiitaで発行したaccessTokenを入力してください'
+  )
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
+  .option(
+    '-f, --file <uploadFilePath>',
+    `投稿したい記事のファイルを指定してください`
   )
   .action(async (options: ExtraInputOptions) => {
     await postArticle(options);
@@ -87,6 +107,15 @@ program
   .option(
     '-t, --token <accessToken>',
     'Qiitaで発行したaccessTokenを入力してください'
+  )
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
+  .option(
+    '-f, --file <uploadFilePath>',
+    `投稿したい記事のファイルを指定してください`
   )
   .action(async (options: ExtraInputOptions) => {
     await patchArticle(options);
