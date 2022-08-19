@@ -51,43 +51,85 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     // 記事本文
     const articleContentsBody = uploadMatterMarkdown.content;
 
-    const res = await axios.post<QiitaPost>(
-      'https://qiita.com/api/v2/items/',
-      {
-        body: articleContentsBody,
-        coediting: uploadMatterMarkdown.data.coediting,
-        group_url_name: uploadMatterMarkdown.data.group_url_name,
-        private: uploadMatterMarkdown.data.private || false,
-        tags: tags,
-        title: title,
-        tweet: false,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${qiitaSetting.token}`,
+    if (uploadMatterMarkdown.data.id) {
+      // 記事id
+      const articleId: string = uploadMatterMarkdown.data.id;
+
+      const res = await axios.patch<QiitaPost>(
+        'https://qiita.com/api/v2/items/' + String(articleId),
+        {
+          body: articleContentsBody,
+          coediting: uploadMatterMarkdown.data.coediting,
+          group_url_name: uploadMatterMarkdown.data.group_url_name,
+          private: uploadMatterMarkdown.data.private || false,
+          tags: tags,
+          title: title,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${qiitaSetting.token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        // 記事投稿成功
+        // 処理完了メッセージ
+        console.log(
+          '\n' +
+            emoji.get('sparkles') +
+            ' Article "' +
+            String(title) +
+            '" is patched' +
+            emoji.get('sparkles') +
+            '\n'
+        );
+        writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, res.data);
+      } else {
+        // 記事投稿失敗
+        console.log(
+          '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
+        );
+        return -1;
       }
-    );
-    if (res.status === 201) {
-      // 記事投稿成功
-      const postData = res.data;
-      // 処理完了メッセージ
-      console.log(
-        '\n' +
-          emoji.get('sparkles') +
-          ' New Article "' +
-          title +
-          '" is created' +
-          emoji.get('sparkles') +
-          '\n'
-      );
-      writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, postData);
     } else {
-      // 記事投稿失敗
-      console.log(
-        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+      const res = await axios.post<QiitaPost>(
+        'https://qiita.com/api/v2/items/',
+        {
+          body: articleContentsBody,
+          coediting: uploadMatterMarkdown.data.coediting,
+          group_url_name: uploadMatterMarkdown.data.group_url_name,
+          private: uploadMatterMarkdown.data.private || false,
+          tags: tags,
+          title: title,
+          tweet: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${qiitaSetting.token}`,
+          },
+        }
       );
-      return -1;
+      if (res.status === 201) {
+        // 記事投稿成功
+        const postData = res.data;
+        // 処理完了メッセージ
+        console.log(
+          '\n' +
+            emoji.get('sparkles') +
+            ' New Article "' +
+            title +
+            '" is created' +
+            emoji.get('sparkles') +
+            '\n'
+        );
+        writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, postData);
+      } else {
+        // 記事投稿失敗
+        console.log(
+          '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+        );
+        return -1;
+      }
     }
     return 0;
   } catch (e) {
@@ -102,15 +144,8 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
 
 async function selectPostFilePath(rootDir: string): Promise<string> {
   const filePathList: string[] = loadArticleFiles(rootDir);
-  const postCandidateFilePathes: string[] = [];
-  for (const filePath of filePathList) {
-    const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
-    if (!parsedMatter.data.id && parsedMatter.data.title) {
-      postCandidateFilePathes.push(filePath);
-    }
-  }
 
-  if (postCandidateFilePathes.length === 0) {
+  if (filePathList.length === 0) {
     return '';
   }
 
@@ -120,7 +155,7 @@ async function selectPostFilePath(rootDir: string): Promise<string> {
       type: 'list',
       message: 'アップロードする記事を選択してください: ',
       name: 'uploadArticles',
-      choices: postCandidateFilePathes,
+      choices: filePathList,
     },
   ];
   const answers = await prompt(inputQuestions);
