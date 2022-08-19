@@ -32,7 +32,7 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
     console.log('------------------------------------------');
     res.data.map((post) => {
       console.log(post.id + ': ' + post.title);
-      const dir: string = path.join('articles', post.title);
+      const dir: string = path.join(options.project, post.title);
       const filePath: string = path.join(dir, post.id + '.md');
       fs.mkdirSync(dir, { recursive: true });
       const frontMatter = `---
