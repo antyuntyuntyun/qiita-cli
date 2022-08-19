@@ -5,6 +5,7 @@ import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
 import matter from 'gray-matter';
+import { createHash } from 'crypto';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function newArticle(options: ExtraInputOptions): Promise<number> {
@@ -81,6 +82,7 @@ qiita cliはローカル上で新規記事/修正記事かどうかはファイ�
       title: answers.article_title,
       tags: [{ name: 'qiita-cli' }],
       private: true,
+      hash: createHash('sha256').update(body).digest('hex'),
     });
     // write frontMatter
     fs.writeFileSync(articlePath, saveMarkdownFile);

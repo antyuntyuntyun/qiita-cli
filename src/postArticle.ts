@@ -3,6 +3,7 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
+import { createHash } from 'crypto';
 import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import {
@@ -68,6 +69,12 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
       if (uploadMatterMarkdown.data.id) {
         // 記事id
         const articleId: string = uploadMatterMarkdown.data.id;
+        const beforeHash = uploadMatterMarkdown.data.hash;
+        const currentHash = createHash('sha256')
+          .update(articleContentsBody)
+          .digest('hex');
+        // ハッシュ値が同じ=変更がないということなのでその場合は更新しないで次に行く
+        if (beforeHash === currentHash) continue;
 
         const res = await axios.patch<QiitaPost>(
           'https://qiita.com/api/v2/items/' + String(articleId),
