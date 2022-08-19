@@ -121,7 +121,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
             private: uploadMatterMarkdown.data.private || false,
             tags: tags,
             title: title,
-            tweet: false,
+            tweet: options.tweet,
           },
           {
             headers: {
