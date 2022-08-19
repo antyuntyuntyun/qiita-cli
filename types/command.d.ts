@@ -5,4 +5,5 @@ export interface commandLineArgs {
 export interface ExtraInputOptions {
   token: string;
   project: string;
+  file: string;
 }
