@@ -4,9 +4,12 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
-import { QiitaPostResponse, Tag } from '~/types/qiita';
+import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
+import {
+  loadArticleFiles,
+  writeFrontmatterMarkdownFileWithQiitaPost,
+} from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function patchArticle(
@@ -53,13 +56,13 @@ export async function patchArticle(
     // 記事id
     const articleId: string = uploadMatterMarkdown.data.id;
 
-    const res = await axios.patch<QiitaPostResponse>(
+    const res = await axios.patch<QiitaPost>(
       'https://qiita.com/api/v2/items/' + String(articleId),
       {
         body: articleContentsBody,
-        coediting: false,
-        group_url_name: 'dev',
-        private: false,
+        coediting: uploadMatterMarkdown.data.coediting,
+        group_url_name: uploadMatterMarkdown.data.group_url_name,
+        private: uploadMatterMarkdown.data.private || false,
         tags: tags,
         title: title,
       },
@@ -82,6 +85,7 @@ export async function patchArticle(
           emoji.get('sparkles') +
           '\n'
       );
+      writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, res.data);
     } else {
       // 記事投稿失敗
       console.log(

@@ -3,9 +3,12 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
 import matter, { GrayMatterFile } from 'gray-matter';
-import { QiitaPostResponse, Tag } from '~/types/qiita';
+import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
+import {
+  loadArticleFiles,
+  writeFrontmatterMarkdownFileWithQiitaPost,
+} from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
@@ -48,13 +51,13 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     // 記事本文
     const articleContentsBody = uploadMatterMarkdown.content;
 
-    const res = await axios.post<QiitaPostResponse>(
+    const res = await axios.post<QiitaPost>(
       'https://qiita.com/api/v2/items/',
       {
         body: articleContentsBody,
-        coediting: false,
-        group_url_name: 'dev',
-        private: false,
+        coediting: uploadMatterMarkdown.data.coediting,
+        group_url_name: uploadMatterMarkdown.data.group_url_name,
+        private: uploadMatterMarkdown.data.private || false,
         tags: tags,
         title: title,
         tweet: false,
@@ -78,17 +81,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
           emoji.get('sparkles') +
           '\n'
       );
-      const renewalPost = matter.stringify(postData.body, {
-        id: postData.id,
-        title: postData.title,
-        created_at: postData.created_at,
-        updated_at: postData.updated_at,
-        tags: JSON.stringify(postData.tags),
-        private: postData.private,
-        url: postData.url,
-        likes_count: postData.likes_count,
-      });
-      fs.writeFileSync(postFilePath, renewalPost);
+      writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, postData);
     } else {
       // 記事投稿失敗
       console.log(
