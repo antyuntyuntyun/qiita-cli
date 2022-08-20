@@ -43,7 +43,11 @@ export class Article {
   }
 
   isNew(): boolean {
-    return this.property === null || this.property.id.length > 0;
+    if (this.property && this.property.id && this.property.id.length > 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   writeFileFromQiitaPost(qiitaPost: QiitaPost): Promise<void> {
