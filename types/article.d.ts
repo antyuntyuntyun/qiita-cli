@@ -1,7 +1,7 @@
 export interface ArticleProperty {
   id: string;
   title: string;
-  coediting?: string;
+  coediting: boolean;
   group_url_name?: string;
   private: boolean;
   tags: ArticleTag[];

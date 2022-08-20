@@ -73,15 +73,18 @@ export class Article {
     }
   }
 
-  writeFileFromQiitaPost(qiitaPost: QiitaPost): Promise<void> {
-    const group_url_name = qiitaPost.group ? qiitaPost.group.url_name : null;
-    const saveMarkdownFile = matter.stringify(qiitaPost.body, {
-      id: qiitaPost.id,
-      title: qiitaPost.title,
+  writeFileFromQiitaPost(qiitaPost: Partial<QiitaPost>): Promise<void> {
+    const group_url_name = qiitaPost.group
+      ? qiitaPost.group.url_name
+      : undefined;
+    const body = qiitaPost.body || '';
+    const articleProparty: Partial<ArticleProperty> = {
+      id: qiitaPost.id || '',
+      title: qiitaPost.title || '',
       coediting: qiitaPost.coediting,
       group_url_name: group_url_name,
-      private: qiitaPost.private,
-      tags: qiitaPost.tags.map((tagObj) => {
+      private: qiitaPost.private || true,
+      tags: (qiitaPost.tags || [{ name: 'qiita-cli' }]).map((tagObj) => {
         return { name: tagObj.name };
       }),
       url: qiitaPost.url,
@@ -89,7 +92,8 @@ export class Article {
       created_at: qiitaPost.created_at,
       updated_at: qiitaPost.updated_at,
       hash: calcArticleHash({ body: qiitaPost.body }),
-    });
+    };
+    const saveMarkdownFile = matter.stringify(body, articleProparty);
     // write frontMatter
     return fs.promises.writeFile(this.filePath, saveMarkdownFile);
   }
