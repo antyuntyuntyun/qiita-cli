@@ -25,7 +25,9 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
 
     console.log('fetching article ... ');
 
-    const currentIdArticles: { [articleId: string]: Article } = loadCurrentIdToArticle(options.project);
+    const currentIdArticles: {
+      [articleId: string]: Article;
+    } = loadCurrentIdToArticle(options.project);
     const authenticatedUser = await loadAuthenticatedUser(options.token);
     // 公開している記事数
     const itemCount = authenticatedUser.data.items_count;
