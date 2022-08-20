@@ -9,6 +9,23 @@ export function loadArticleFiles(rootDir: string): string[] {
   return fg.sync([rootDir, '**', '*.md'].join('/'), { dot: true });
 }
 
+export function loadCurrentIdToArticle(
+  rootDir: string
+): { [articleId: string]: Article } {
+  const currentIdFileArticles: { [articleId: string]: Article } = {};
+  const allFiles = loadArticleFiles(rootDir);
+  for (const filePath of allFiles) {
+    const article = new Article(filePath);
+    if (!article.isNew()) {
+      const property = article.getProperty();
+      if (property) {
+        currentIdFileArticles[property.id] = article;
+      }
+    }
+  }
+  return currentIdFileArticles;
+}
+
 export const defaultProjectName = 'articles';
 
 export class Article {

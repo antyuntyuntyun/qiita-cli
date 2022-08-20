@@ -5,7 +5,7 @@ import path from 'path';
 // import qiitaSetting from '../qiita.json';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
-import { loadArticleFiles, Article } from './commons/articles';
+import { loadCurrentIdToArticle, Article } from './commons/articles';
 import {
   itemsPerPage,
   maxPageNumber,
@@ -25,7 +25,7 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
 
     console.log('fetching article ... ');
 
-    const currentIdArticles = loadCurrentIdToArticle(options.project);
+    const currentIdArticles: { [articleId: string]: Article } = loadCurrentIdToArticle(options.project);
     const authenticatedUser = await loadAuthenticatedUser(options.token);
     // 公開している記事数
     const itemCount = authenticatedUser.data.items_count;
@@ -70,21 +70,4 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
     return -1;
   }
   return 1;
-}
-
-function loadCurrentIdToArticle(
-  rootDir: string
-): { [articleId: string]: Article } {
-  const currentIdFileArticles: { [articleId: string]: Article } = {};
-  const allFiles = loadArticleFiles(rootDir);
-  for (const filePath of allFiles) {
-    const article = new Article(filePath);
-    if (!article.isNew()) {
-      const property = article.getProperty();
-      if (property) {
-        currentIdFileArticles[property.id] = article;
-      }
-    }
-  }
-  return currentIdFileArticles;
 }
