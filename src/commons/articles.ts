@@ -74,14 +74,14 @@ export class Article {
       title: qiitaPost.title,
       coediting: qiitaPost.coediting,
       group_url_name: group_url_name,
-      created_at: qiitaPost.created_at,
-      updated_at: qiitaPost.updated_at,
+      private: qiitaPost.private,
       tags: qiitaPost.tags.map((tagObj) => {
         return { name: tagObj.name };
       }),
-      private: qiitaPost.private,
       url: qiitaPost.url,
       likes_count: qiitaPost.likes_count,
+      created_at: qiitaPost.created_at,
+      updated_at: qiitaPost.updated_at,
       hash: createHash('sha256').update(qiitaPost.body).digest('hex'),
     });
     // write frontMatter

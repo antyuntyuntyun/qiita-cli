@@ -1,14 +1,14 @@
 export interface ArticleProperty {
   id: string;
   title: string;
-  private: boolean;
   coediting?: string;
   group_url_name?: string;
+  private: boolean;
   tags: ArticleTag[];
-  created_at?: string;
-  updated_at?: string;
   url?: string;
   likes_count?: number;
+  created_at?: string;
+  updated_at?: string;
   hash: string;
   body: string;
 }
