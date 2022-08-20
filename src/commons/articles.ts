@@ -26,6 +26,12 @@ export function loadCurrentIdToArticle(
   return currentIdFileArticles;
 }
 
+export function calcArticleHash(property: Partial<ArticleProperty>): string {
+  return createHash('sha256')
+    .update(property.body || '')
+    .digest('hex');
+}
+
 export const defaultProjectName = 'articles';
 
 export class Article {
@@ -82,7 +88,7 @@ export class Article {
       likes_count: qiitaPost.likes_count,
       created_at: qiitaPost.created_at,
       updated_at: qiitaPost.updated_at,
-      hash: createHash('sha256').update(qiitaPost.body).digest('hex'),
+      hash: calcArticleHash({ body: qiitaPost.body }),
     });
     // write frontMatter
     return fs.promises.writeFile(this.filePath, saveMarkdownFile);

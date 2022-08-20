@@ -1,9 +1,8 @@
 import emoji from 'node-emoji';
 import { prompt, QuestionCollection } from 'inquirer';
-import { createHash } from 'crypto';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
-import { loadArticleFiles, Article } from './commons/articles';
+import { loadArticleFiles, calcArticleHash, Article } from './commons/articles';
 import { postItem, patchItem } from './commons/qiitaApis';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
@@ -64,9 +63,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
         }
       } else {
         const beforeHash = articleProperty.hash;
-        const currentHash = createHash('sha256')
-          .update(articleProperty.body)
-          .digest('hex');
+        const currentHash = calcArticleHash(articleProperty);
         // ハッシュ値が同じ=変更がないということなのでその場合は更新しないで次に行く
         if (beforeHash === currentHash) continue;
 
