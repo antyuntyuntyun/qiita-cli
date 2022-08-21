@@ -91,9 +91,14 @@ export class Article {
       likes_count: qiitaPost.likes_count,
       created_at: qiitaPost.created_at,
       updated_at: qiitaPost.updated_at,
-      hash: calcArticleHash({ body: qiitaPost.body }),
+      hash: calcArticleHash({ body: body }),
     };
-    const saveMarkdownFile = matter.stringify(body, articleProparty);
+    const matterProperty = Object.fromEntries(
+      Object.entries(articleProparty).filter(
+        ([key, value]) => value !== null && value != undefined
+      )
+    );
+    const saveMarkdownFile = matter.stringify(body, matterProperty);
     // write frontMatter
     return fs.promises.writeFile(this.filePath, saveMarkdownFile);
   }
