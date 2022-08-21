@@ -55,7 +55,7 @@ export class Article {
     );
     this.property = {
       id: matterMarkdown.data.id,
-      title: matterMarkdown.data.string,
+      title: matterMarkdown.data.title,
       coediting: matterMarkdown.data.coediting,
       group_url_name: matterMarkdown.data.group_url_name,
       private: matterMarkdown.data.private,
