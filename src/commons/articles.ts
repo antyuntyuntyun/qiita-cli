@@ -88,7 +88,6 @@ export class Article {
         return { name: tagObj.name };
       }),
       url: qiitaPost.url,
-      likes_count: qiitaPost.likes_count,
       created_at: qiitaPost.created_at,
       updated_at: qiitaPost.updated_at,
       hash: calcArticleHash({ body: body }),
