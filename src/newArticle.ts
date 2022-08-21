@@ -3,7 +3,6 @@ import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
-import matter from 'gray-matter';
 import { Article } from './commons/articles';
 import { ExtraInputOptions } from '~/types/command';
 
