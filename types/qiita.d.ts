@@ -4,7 +4,7 @@ export interface QiitaPost {
   coediting: boolean;
   comments_count: number;
   created_at: string;
-  group: Group | undefined;
+  group: Group | null;
   id: string;
   likes_count: number;
   private: boolean;
@@ -19,7 +19,7 @@ export interface QiitaPost {
 
 export interface Tag {
   name: string;
-  versions?: string[] | undefined;
+  versions?: string[] | null;
 }
 
 export interface User {
