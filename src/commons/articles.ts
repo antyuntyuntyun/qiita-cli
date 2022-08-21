@@ -83,7 +83,7 @@ export class Article {
       title: qiitaPost.title || '',
       coediting: qiitaPost.coediting,
       group_url_name: group_url_name,
-      private: qiitaPost.private || true,
+      private: qiitaPost.private,
       tags: (qiitaPost.tags || [{ name: 'qiita-cli' }]).map((tagObj) => {
         return { name: tagObj.name };
       }),
