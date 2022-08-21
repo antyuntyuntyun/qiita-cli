@@ -6,6 +6,7 @@ import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
+import { loadAuthenticatedUser } from './commons/qiitaApis';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {
@@ -56,14 +57,7 @@ export async function accessTokenInitialize(): Promise<number> {
     // const token = JSON.stringify(answers, null, '  ');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const token: string = answers.token;
-    const res = await axios.get<User>(
-      'https://qiita.com/api/v2/authenticated_user',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await loadAuthenticatedUser(token);
     const qiitaUser = {
       id: res.data.id,
       token: token,

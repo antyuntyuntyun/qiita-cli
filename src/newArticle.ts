@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-// import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
-import matter from 'gray-matter';
-import { createHash } from 'crypto';
+import { Article } from './commons/articles';
 import { ExtraInputOptions } from '~/types/command';
 
 export async function newArticle(options: ExtraInputOptions): Promise<number> {
@@ -77,16 +75,14 @@ tags: [{"name":"C++","versions":[]},{"name":"AtCoder","versions":[]}]
 qiita cliはローカル上で新規記事/修正記事かどうかはファイル名により判断します.
 \`not_uploaded.md\`というファイル名はそのままに ${emoji.get('bow')}
 `;
-    const saveMarkdownFile = matter.stringify(body, {
+    const article = new Article(articlePath);
+    await article.writeFileFromQiitaPost({
       id: '',
       title: answers.article_title,
       tags: [{ name: 'qiita-cli' }],
       private: true,
-      hash: createHash('sha256').update(body).digest('hex'),
+      body: body,
     });
-    // write frontMatter
-    fs.writeFileSync(articlePath, saveMarkdownFile);
-
     // 処理完了メッセージ
     console.log(
       '\n' +

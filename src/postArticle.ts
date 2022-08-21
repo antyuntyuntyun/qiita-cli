@@ -1,16 +1,9 @@
-import axios from 'axios';
 import emoji from 'node-emoji';
-import fs from 'fs';
 import { prompt, QuestionCollection } from 'inquirer';
-import matter, { GrayMatterFile } from 'gray-matter';
-import { createHash } from 'crypto';
-import { QiitaPost, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import {
-  loadArticleFiles,
-  writeFrontmatterMarkdownFileWithQiitaPost,
-} from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
+import { loadArticleFiles, calcArticleHash, Article } from './commons/articles';
+import { postItem, patchItem } from './commons/qiitaApis';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -28,22 +21,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
     );
-    const uploadFiles: Set<string> = new Set<string>();
-    if (options.all) {
-      const allFiles = loadArticleFiles(options.project);
-      for (const file of allFiles) {
-        uploadFiles.add(file);
-      }
-    } else if (options.file) {
-      uploadFiles.add(options.file);
-    } else {
-      const selectedFile = await selectPostFilePath(
-        loadArticleFiles(options.project)
-      );
-      if (selectedFile) {
-        uploadFiles.add(selectedFile);
-      }
-    }
+    const uploadFiles: Set<string> = await buildWillUploadFilePathSet(options);
     if (uploadFiles.size <= 0) {
       console.log(
         '\n' +
@@ -54,44 +32,42 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
       return 1;
     }
 
+    const writeFilePromises: Promise<void>[] = [];
     for (const postFilePath of uploadFiles) {
-      const uploadMatterMarkdown: GrayMatterFile<string> = matter(
-        fs.readFileSync(postFilePath, 'utf-8')
-      );
-
-      // 記事タイトル
-      const title: string = uploadMatterMarkdown.data.title || '';
-      const tags: Tag[] = uploadMatterMarkdown.data.tags || [];
-
-      // 記事本文
-      const articleContentsBody = uploadMatterMarkdown.content;
-
-      if (uploadMatterMarkdown.data.id) {
-        // 記事id
-        const articleId: string = uploadMatterMarkdown.data.id;
-        const beforeHash = uploadMatterMarkdown.data.hash;
-        const currentHash = createHash('sha256')
-          .update(articleContentsBody)
-          .digest('hex');
+      const article = new Article(postFilePath);
+      const articleProperty = article.getProperty();
+      if (!articleProperty) continue;
+      if (article.isNew()) {
+        const res = await postItem(
+          qiitaSetting.token,
+          articleProperty,
+          options.tweet
+        );
+        if (res.status === 201) {
+          // 処理完了メッセージ
+          console.log(
+            '\n' +
+              emoji.get('sparkles') +
+              ' New Article "' +
+              articleProperty.title +
+              '" is created' +
+              emoji.get('sparkles') +
+              '\n'
+          );
+          writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
+        } else {
+          // 記事投稿失敗
+          console.log(
+            '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+          );
+        }
+      } else {
+        const beforeHash = articleProperty.hash;
+        const currentHash = calcArticleHash(articleProperty);
         // ハッシュ値が同じ=変更がないということなのでその場合は更新しないで次に行く
         if (beforeHash === currentHash) continue;
 
-        const res = await axios.patch<QiitaPost>(
-          'https://qiita.com/api/v2/items/' + String(articleId),
-          {
-            body: articleContentsBody,
-            coediting: uploadMatterMarkdown.data.coediting,
-            group_url_name: uploadMatterMarkdown.data.group_url_name,
-            private: uploadMatterMarkdown.data.private || false,
-            tags: tags,
-            title: title,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${qiitaSetting.token}`,
-            },
-          }
-        );
+        const res = await patchItem(qiitaSetting.token, articleProperty);
         if (res.status === 200) {
           // 記事投稿成功
           // 処理完了メッセージ
@@ -99,58 +75,21 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
             '\n' +
               emoji.get('sparkles') +
               ' Article "' +
-              String(title) +
+              articleProperty.title +
               '" is patched' +
               emoji.get('sparkles') +
               '\n'
           );
-          writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, res.data);
+          writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
         } else {
           // 記事投稿失敗
           console.log(
             '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
           );
         }
-      } else {
-        const res = await axios.post<QiitaPost>(
-          'https://qiita.com/api/v2/items/',
-          {
-            body: articleContentsBody,
-            coediting: uploadMatterMarkdown.data.coediting,
-            group_url_name: uploadMatterMarkdown.data.group_url_name,
-            private: uploadMatterMarkdown.data.private || false,
-            tags: tags,
-            title: title,
-            tweet: options.tweet,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${qiitaSetting.token}`,
-            },
-          }
-        );
-        if (res.status === 201) {
-          // 記事投稿成功
-          const postData = res.data;
-          // 処理完了メッセージ
-          console.log(
-            '\n' +
-              emoji.get('sparkles') +
-              ' New Article "' +
-              title +
-              '" is created' +
-              emoji.get('sparkles') +
-              '\n'
-          );
-          writeFrontmatterMarkdownFileWithQiitaPost(postFilePath, postData);
-        } else {
-          // 記事投稿失敗
-          console.log(
-            '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-          );
-        }
       }
     }
+    await Promise.all(writeFilePromises);
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
@@ -160,6 +99,28 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     return -1;
   }
   return 1;
+}
+
+async function buildWillUploadFilePathSet(
+  options: ExtraInputOptions
+): Promise<Set<string>> {
+  const uploadFiles: Set<string> = new Set<string>();
+  if (options.all) {
+    const allFiles = loadArticleFiles(options.project);
+    for (const file of allFiles) {
+      uploadFiles.add(file);
+    }
+  } else if (options.file) {
+    uploadFiles.add(options.file);
+  } else {
+    const selectedFile = await selectPostFilePath(
+      loadArticleFiles(options.project)
+    );
+    if (selectedFile) {
+      uploadFiles.add(selectedFile);
+    }
+  }
+  return uploadFiles;
 }
 
 async function selectPostFilePath(
