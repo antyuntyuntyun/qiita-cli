@@ -20,8 +20,8 @@ qiita --help, -h              ヘルプ
 
 Remark:
 コマンドは全て作業フォルダのルートでの実行を想定したものになっています.
-記事の取得・投稿は作業フォルダはコマンド実行場所の作業フォルダ内のarticlesフォルダを基準に実行されます.
-(articlesフォルダはqiita init や qiit pull コマンドで生成されます)
+記事の取得・投稿は作業フォルダはコマンド実行場所の作業フォルダ内の${defaultProjectName}フォルダを基準に実行されます.
+(${defaultProjectName}フォルダはqiita init や qiit pull コマンドで生成されます)
 `;
 
 /**
@@ -74,6 +74,7 @@ program
     `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
     defaultProjectName
   )
+  .option('-s, --simplify', `入力事項が省略されて新しい記事が作成されます`)
   .action(async (options: ExtraInputOptions) => {
     await newArticle(options);
   });

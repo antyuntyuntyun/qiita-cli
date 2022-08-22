@@ -8,4 +8,5 @@ export interface ExtraInputOptions {
   file: string;
   all: boolean;
   tweet: boolean;
+  simplify: boolean;
 }

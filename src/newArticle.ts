@@ -10,17 +10,21 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
   try {
     console.log('Qiita 記事新規作成\n');
 
-    // ユーザ入出力形式指定用変数
-    const inputArticleTitleQuestions: QuestionCollection = [
-      {
-        type: 'input',
-        message: '記事タイトル: ',
-        name: 'article_title',
-      },
-    ];
-    const answers: Answers | { article_title: string } = await prompt(
-      inputArticleTitleQuestions
-    );
+    let articleTitle = '新しい記事のタイトル';
+    if (!options.simplify) {
+      // ユーザ入出力形式指定用変数
+      const inputArticleTitleQuestions: QuestionCollection = [
+        {
+          type: 'input',
+          message: '記事タイトル: ',
+          name: 'article_title',
+        },
+      ];
+      const answers: Answers | { article_title: string } = await prompt(
+        inputArticleTitleQuestions
+      );
+      articleTitle = answers.article_title;
+    }
 
     // 作業ディレクトリに記事用フォルダを作成
     const articleBaseDir = options.project;
@@ -29,7 +33,7 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
     }
 
     // ユーザ入力を元に記事フォルダ/ファイル作成
-    const articleDir = path.join(articleBaseDir, answers.article_title);
+    const articleDir = path.join(articleBaseDir, articleTitle);
     const articlePath = path.join(articleDir, 'not_uploaded.md');
     if (fs.existsSync(articleDir)) {
       // ユーザ入出力形式指定
@@ -78,7 +82,7 @@ qiita cliはローカル上で新規記事/修正記事かどうかはファイ�
     const article = new Article(articlePath);
     await article.writeFileFromQiitaPost({
       id: '',
-      title: answers.article_title,
+      title: articleTitle,
       tags: [{ name: 'qiita-cli' }],
       private: true,
       body: body,
