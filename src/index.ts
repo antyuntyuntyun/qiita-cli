@@ -1,5 +1,4 @@
 import { accessTokenInitialize } from './accessTokenInitialize';
-import { Calc } from './calc';
 import emoji from 'node-emoji';
 import { newArticle } from './newArticle';
 import { pullArticle } from './pullArticle';
@@ -99,13 +98,6 @@ program
   .option('--tweet', `新規投稿時にtwitterにも一緒に投稿する`)
   .action(async (options: ExtraInputOptions) => {
     await postArticle(options);
-  });
-
-program
-  .command('sync')
-  .description('ローカルで作成/修正した記事の一括反映および投稿済み記事の取得')
-  .action(() => {
-    new Calc().add(1, 2);
   });
 
 program.parse(process.argv);
