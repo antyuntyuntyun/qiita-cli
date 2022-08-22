@@ -9,4 +9,5 @@ export interface ExtraInputOptions {
   all: boolean;
   tweet: boolean;
   simplify: boolean;
+  overwrite: boolean;
 }

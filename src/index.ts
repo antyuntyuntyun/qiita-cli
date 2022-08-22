@@ -95,6 +95,7 @@ program
     '-f, --file <uploadFilePath>',
     `投稿したい記事のファイルを指定してください`
   )
+  .option('-o, --overwrite', `新規投稿の場合、 記事のファイル名を "投稿したid名.md" のファイル名に上書きする`)
   .option('--all', `プロジェクト以下に存在する全ての記事を投稿する`)
   .option('--tweet', `新規投稿時にtwitterにも一緒に投稿する`)
   .action(async (options: ExtraInputOptions) => {
