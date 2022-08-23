@@ -1,20 +1,18 @@
 import { accessTokenInitialize } from './accessTokenInitialize';
-import { Calc } from './calc';
 import emoji from 'node-emoji';
 import { newArticle } from './newArticle';
 import { pullArticle } from './pullArticle';
 import packageJson from '../package.json';
 import { postArticle } from './postArticle';
-import { patchArticle } from './patchArticle';
 import { program } from 'commander';
+import { defaultProjectName } from './commons/articles';
 import { ExtraInputOptions } from '~/types/command';
 
-const mainUsage: string = `Command:
+const mainUsage = `Command:
 qiita init                    qiitaとの接続設定. 初回のみ実行
 qiita pull:article            既に投稿している記事をローカルにpull(強制上書き)
 qiita new:article             新しい記事を追加
-qiita post:article            ローカルで新規作成した記事を選択的に投稿
-qiita patch:article           ローカルで修正した記事を選択的に投稿
+qiita post:article            ローカルの記事を投稿
 qiita delete:article(未実装)   選択した記事の削除
 qiita sync(未実装)             ローカルで作成/修正した記事の一括反映および投稿済み記事の取得
 qiita --version, -v           qiita-cliのバージョンを表示
@@ -22,8 +20,8 @@ qiita --help, -h              ヘルプ
 
 Remark:
 コマンドは全て作業フォルダのルートでの実行を想定したものになっています.
-記事の取得・投稿は作業フォルダはコマンド実行場所の作業フォルダ内のarticlesフォルダを基準に実行されます.
-(articlesフォルダはqiita init や qiit pull コマンドで生成されます)
+記事の取得・投稿は作業フォルダはコマンド実行場所の作業フォルダ内の${defaultProjectName}フォルダを基準に実行されます.
+(${defaultProjectName}フォルダはqiita init や qiit pull コマンドで生成されます)
 `;
 
 /**
@@ -59,6 +57,11 @@ program
     '-t, --token <accessToken>',
     'Qiitaで発行したaccessTokenを入力してください'
   )
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
   .action(async (options: ExtraInputOptions) => {
     await pullArticle(options);
   });
@@ -66,8 +69,14 @@ program
 program
   .command('new:article')
   .description('新しい記事を追加')
-  .action(async () => {
-    await newArticle();
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
+  .option('-s, --simplify', `入力事項が省略されて新しい記事が作成されます`)
+  .action(async (options: ExtraInputOptions) => {
+    await newArticle(options);
   });
 
 program
@@ -77,26 +86,23 @@ program
     '-t, --token <accessToken>',
     'Qiitaで発行したaccessTokenを入力してください'
   )
+  .option(
+    '-p, --project <baseProjectPath>',
+    `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
+    defaultProjectName
+  )
+  .option(
+    '-f, --file <uploadFilePath>',
+    `投稿したい記事のファイルを指定してください`
+  )
+  .option(
+    '-o, --overwrite',
+    `新規投稿の場合、 記事のファイル名を "投稿したid名.md" のファイル名に上書きする`
+  )
+  .option('--all', `プロジェクト以下に存在する全ての記事を投稿する`)
+  .option('--tweet', `新規投稿時にtwitterにも一緒に投稿する`)
   .action(async (options: ExtraInputOptions) => {
     await postArticle(options);
-  });
-
-program
-  .command('patch:article')
-  .description('ローカルで修正した記事を選択的に投稿')
-  .option(
-    '-t, --token <accessToken>',
-    'Qiitaで発行したaccessTokenを入力してください'
-  )
-  .action(async (options: ExtraInputOptions) => {
-    await patchArticle(options);
-  });
-
-program
-  .command('sync')
-  .description('ローカルで作成/修正した記事の一括反映および投稿済み記事の取得')
-  .action(() => {
-    new Calc().add(1, 2);
   });
 
 program.parse(process.argv);

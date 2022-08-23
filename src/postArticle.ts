@@ -1,12 +1,10 @@
-import axios from 'axios';
 import emoji from 'node-emoji';
-import fs from 'fs';
+import path from 'path';
 import { prompt, QuestionCollection } from 'inquirer';
-import matter, { GrayMatterFile } from 'gray-matter';
-import { QiitaPostResponse, Tag } from '~/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { loadArticleFiles } from './commons/articlesDirectory';
 import { ExtraInputOptions } from '~/types/command';
+import { loadArticleFiles, calcArticleHash, Article } from './commons/articles';
+import { postItem, patchItem } from './commons/qiitaApis';
 
 export async function postArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -21,111 +19,81 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'aricleディレクトリのある作業ディレクトリでコマンド実行している前提での処理です.'
     );
-    console.log(
-      'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
-    );
-    const articleBaseDir = 'articles';
-
-    const filePathList: string[] = loadArticleFiles(articleBaseDir);
-    const newPostCandidateMatterMarkdowns: {
-      [s: string]: GrayMatterFile<string>;
-    } = {};
-    for (const filePath of filePathList) {
-      const parsedMatter = matter(fs.readFileSync(filePath, 'utf-8'));
-      if (!parsedMatter.data.id && parsedMatter.data.title) {
-        newPostCandidateMatterMarkdowns[filePath] = parsedMatter;
-      }
-    }
-
-    if (Object.keys(newPostCandidateMatterMarkdowns).length === 0) {
+    const uploadFiles: Set<string> = await buildWillUploadFilePathSet(options);
+    if (uploadFiles.size <= 0) {
       console.log(
-        '\n' +
-          emoji.get('disappointed') +
-          ' There are no "will_be_patched.md" files\n'
+        '\n' + emoji.get('disappointed') + ' ファイルが見つかりませんでした\n'
       );
       console.log(emoji.get('hatched_chick') + ' 処理を中止しました\n');
       return 1;
     }
 
-    //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
-    const inputQuestions: QuestionCollection = [
-      {
-        type: 'list',
-        message: 'アップロードする記事を選択してください: ',
-        name: 'uploadArticles',
-        choices: Object.keys(newPostCandidateMatterMarkdowns),
-      },
-    ];
-    const answers = await prompt(inputQuestions);
+    const writeFilePromises: Promise<void>[] = [];
+    for (const postFilePath of uploadFiles) {
+      const article = new Article(postFilePath);
+      const articleProperty = article.getProperty();
+      if (!articleProperty) continue;
+      if (article.isNew()) {
+        const res = await postItem(
+          qiitaSetting.token,
+          articleProperty,
+          options.tweet
+        );
+        if (res.status === 201) {
+          // 処理完了メッセージ
+          console.log(
+            '\n' +
+              emoji.get('sparkles') +
+              ' New Article "' +
+              articleProperty.title +
+              '" is created' +
+              emoji.get('sparkles') +
+              '\n'
+          );
+          writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
+          if (options.overwrite) {
+            const articlePath = path.join(
+              options.project,
+              res.data.title,
+              `${res.data.id}.md`
+            );
+            writeFilePromises.push(article.renameFile(articlePath));
+          }
+        } else {
+          // 記事投稿失敗
+          console.log(
+            '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
+          );
+        }
+      } else {
+        const beforeHash = articleProperty.hash;
+        const currentHash = calcArticleHash(articleProperty);
+        // ハッシュ値が同じ=変更がないということなのでその場合は更新しないで次に行く
+        if (beforeHash === currentHash) continue;
 
-    const postFilePath = answers.uploadArticles;
-    //   TODO: 複数選択対応
-    const uploadMatterMarkdown: GrayMatterFile<string> | undefined =
-      newPostCandidateMatterMarkdowns[postFilePath];
-
-    if (!uploadMatterMarkdown) {
-      // 記事投稿失敗
-      console.log(
-        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-      );
-      return -1;
-    }
-
-    // 記事タイトル
-    const title: string = uploadMatterMarkdown.data.title || '';
-    const tags: Tag[] = uploadMatterMarkdown.data.tags || [];
-
-    // 記事本文
-    const articleContentsBody = uploadMatterMarkdown.content;
-
-    const res = await axios.post<QiitaPostResponse>(
-      'https://qiita.com/api/v2/items/',
-      {
-        body: articleContentsBody,
-        coediting: false,
-        group_url_name: 'dev',
-        private: false,
-        tags: tags,
-        title: title,
-        tweet: false,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${qiitaSetting.token}`,
-        },
+        const res = await patchItem(qiitaSetting.token, articleProperty);
+        if (res.status === 200) {
+          // 記事投稿成功
+          // 処理完了メッセージ
+          console.log(
+            '\n' +
+              emoji.get('sparkles') +
+              ' Article "' +
+              articleProperty.title +
+              '" is patched' +
+              emoji.get('sparkles') +
+              '\n'
+          );
+          writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
+        } else {
+          // 記事投稿失敗
+          console.log(
+            '\n' + emoji.get('disappointed') + ' fail to patch article.\n'
+          );
+        }
       }
-    );
-    if (res.status === 201) {
-      // 記事投稿成功
-      const postData = res.data;
-      // 処理完了メッセージ
-      console.log(
-        '\n' +
-          emoji.get('sparkles') +
-          ' New Article "' +
-          title +
-          '" is created' +
-          emoji.get('sparkles') +
-          '\n'
-      );
-      const renewalPost = matter.stringify(postData.body, {
-        id: postData.id,
-        title: postData.title,
-        created_at: postData.created_at,
-        updated_at: postData.updated_at,
-        tags: JSON.stringify(postData.tags),
-        private: postData.private,
-        url: postData.url,
-        likes_count: postData.likes_count,
-      });
-      fs.writeFileSync(postFilePath, renewalPost);
-    } else {
-      // 記事投稿失敗
-      console.log(
-        '\n' + emoji.get('disappointed') + ' fail to post new article.\n'
-      );
-      return -1;
     }
+    await Promise.all(writeFilePromises);
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
@@ -135,4 +103,47 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     return -1;
   }
   return 1;
+}
+
+async function buildWillUploadFilePathSet(
+  options: ExtraInputOptions
+): Promise<Set<string>> {
+  const uploadFiles: Set<string> = new Set<string>();
+  if (options.all) {
+    const allFiles = loadArticleFiles(options.project);
+    for (const file of allFiles) {
+      uploadFiles.add(file);
+    }
+  } else if (options.file) {
+    uploadFiles.add(options.file);
+  } else {
+    const selectedFile = await selectPostFilePath(
+      loadArticleFiles(options.project)
+    );
+    if (selectedFile) {
+      uploadFiles.add(selectedFile);
+    }
+  }
+  return uploadFiles;
+}
+
+async function selectPostFilePath(
+  candidateFilePathList: string[]
+): Promise<string> {
+  if (candidateFilePathList.length === 0) {
+    return '';
+  }
+
+  //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
+  const inputQuestions: QuestionCollection = [
+    {
+      type: 'list',
+      message: 'アップロードする記事を選択してください: ',
+      name: 'uploadArticles',
+      choices: candidateFilePathList,
+    },
+  ];
+  const answers = await prompt(inputQuestions);
+
+  return answers.uploadArticles;
 }
