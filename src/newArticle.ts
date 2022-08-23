@@ -27,17 +27,11 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
       articleTitle = answers.article_title;
     }
 
-    // 作業ディレクトリに記事用フォルダを作成
     const articleBaseDir = options.project;
-    if (!fs.existsSync(articleBaseDir)) {
-      fs.mkdirSync(articleBaseDir);
-    }
-
     // Qiitaのidっぽいランダムな文字列を生成
     const newArticleFileName = randomBytes(10).toString('hex');
-    // ユーザ入力を元に記事フォルダ/ファイル作成
-    const articleDir = path.join(articleBaseDir, articleTitle);
-    const articlePath = path.join(articleDir, `${newArticleFileName}.md`);
+    // 記事のタイトルを基にフォルダ/ファイル作成
+    const articlePath = path.join(articleBaseDir, articleTitle, `${newArticleFileName}.md`);
     if (fs.existsSync(articlePath)) {
       console.log(
         '\n' +
@@ -46,9 +40,8 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
       );
       return 0;
     }
-    if (!fs.existsSync(articleDir)) {
-      fs.mkdirSync(articleDir);
-    }
+    // 作業フォルダに記事用フォルダを作成
+    fs.mkdirSync(path.dirname(articlePath), { recursive: true });
     const body = `
 ここから本文を書く
 # ${emoji.get('hatched_chick')} qiita cliによる自動生成です.
