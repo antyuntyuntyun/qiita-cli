@@ -1,12 +1,17 @@
-import axios from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
-import { QiitaPost } from '@/types/qiita';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
+import { loadCurrentIdToArticle, Article } from './commons/articles';
+import {
+  itemsPerPage,
+  maxPageNumber,
+  loadAuthenticatedUser,
+  loadPostItems,
+} from './commons/qiitaApis';
 
 export async function pullArticle(options: ExtraInputOptions): Promise<number> {
   try {
@@ -20,39 +25,36 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
 
     console.log('fetching article ... ');
 
-    const res = await axios.get<QiitaPost[]>(
-      'https://qiita.com/api/v2/authenticated_user/items',
-      {
-        headers: {
-          Authorization: `Bearer ${qiitaSetting.token}`,
-        },
+    const currentIdArticles: {
+      [articleId: string]: Article;
+    } = loadCurrentIdToArticle(options.project);
+    const authenticatedUser = await loadAuthenticatedUser(options.token);
+    // 公開している記事数
+    const itemCount = authenticatedUser.data.items_count;
+    for (let page = 1; page <= maxPageNumber; ++page) {
+      const res = await loadPostItems(qiitaSetting.token, page);
+      const fileWritePromises: Promise<void>[] = [];
+      // make .md file from res data
+      console.log('------------------------------------------');
+      for (const post of res.data) {
+        console.log(post.id + ': ' + post.title);
+        if (currentIdArticles[post.id]) {
+          const article = currentIdArticles[post.id];
+          fileWritePromises.push(article.writeFileFromQiitaPost(post));
+        } else {
+          const dir: string = path.join(options.project, post.title);
+          const filePath: string = path.join(dir, post.id + '.md');
+          fs.mkdirSync(dir, { recursive: true });
+          const article = new Article(filePath);
+          fileWritePromises.push(article.writeFileFromQiitaPost(post));
+        }
       }
-    );
-    // make .md file from res data
-    console.log('------------------------------------------');
-    res.data.map((post) => {
-      console.log(post.id + ': ' + post.title);
-      const dir: string = path.join('articles', post.title);
-      const filePath: string = path.join(dir, post.id + '.md');
-      fs.mkdirSync(dir, { recursive: true });
-      const frontMatter = `---
-id: ${post.id}
-title: ${post.title}
-created_at: ${post.created_at}
-updated_at: ${post.updated_at}
-tags: ${String(JSON.stringify(post.tags))}
-private: ${String(post.private)}
-url: ${String(post.url)}
-likes_count: ${String(post.likes_count)}
----
-
-`;
-      // write frontMatter
-      fs.writeFileSync(filePath, frontMatter);
-      // write body
-      fs.appendFileSync(filePath, post.body);
-    });
-    console.log('------------------------------------------');
+      console.log('------------------------------------------');
+      await Promise.all(fileWritePromises);
+      if (itemCount <= page * itemsPerPage) {
+        break;
+      }
+    }
     // 処理完了メッセージ
     console.log(
       '\n' +

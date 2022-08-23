@@ -5,8 +5,8 @@ import open from 'open';
 import { Answers, prompt, QuestionCollection } from 'inquirer';
 import sleep from 'sleep-promise';
 import { User } from '@/types/qiita';
-import path from 'path';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
+import { loadAuthenticatedUser } from './commons/qiitaApis';
 
 export async function accessTokenInitialize(): Promise<number> {
   try {
@@ -57,14 +57,7 @@ export async function accessTokenInitialize(): Promise<number> {
     // const token = JSON.stringify(answers, null, '  ');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const token: string = answers.token;
-    const res = await axios.get<User>(
-      'https://qiita.com/api/v2/authenticated_user',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await loadAuthenticatedUser(token);
     const qiitaUser = {
       id: res.data.id,
       token: token,
@@ -73,12 +66,6 @@ export async function accessTokenInitialize(): Promise<number> {
     // 設定ファイル書き込み
     fs.writeFileSync(filePath, qiitaUserJson);
     fs.appendFileSync(filePath, '\n');
-
-    // 作業ディレクトリに記事用フォルダを作成
-    const articleDir = 'articles';
-    if (!fs.existsSync(articleDir)) {
-      fs.mkdirSync(articleDir);
-    }
 
     // 処理完了メッセージ
     console.log(
@@ -90,8 +77,6 @@ export async function accessTokenInitialize(): Promise<number> {
     );
     console.log('Your token has been saved to the following path:');
     console.log('\n' + '\t' + filePath + '\n');
-    console.log('Your articles folder:');
-    console.log('\n' + '\t' + path.join(process.cwd(), 'articles') + '\n');
     return 0;
   } catch (e) {
     const red = '\u001b[31m';
