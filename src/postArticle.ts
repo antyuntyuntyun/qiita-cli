@@ -17,7 +17,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
 
     console.log('Qiita 記事投稿\n\n');
     console.log(
-      'aricleディレクトリのある作業ディレクトリでコマンド実行している前提での処理です.'
+      `${options.project}フォルダ以下にあるmdファイルを投稿していきます`
     );
     const uploadFiles: Set<string> = await buildWillUploadFilePathSet(options);
     if (uploadFiles.size <= 0) {
@@ -134,7 +134,7 @@ async function selectPostFilePath(
     return '';
   }
 
-  //   typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
+  // typ: 'checkbox'とすることで、複数選択可能状態にできるが、シェル上で挙動が不安定になるので、一旦単一選択のlistを採用
   const inputQuestions: QuestionCollection = [
     {
       type: 'list',

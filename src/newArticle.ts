@@ -46,17 +46,26 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
 ここから本文を書く
 # ${emoji.get('hatched_chick')} qiita cliによる自動生成です.
 
-上記ハイフンで囲まれた部分(フロント・マター)より下のこちらの部分を編集して記事本文を作成してください.
-フロント・マター以下の本文含めた自動生成された部分は削除して構いません. 
-自動生成に倣い,フロント・マター以下に1行改行を加え、markdown形式で記載してください
+上記ハイフンで囲まれた部分(\`Front Matter\`)より下のこちらの部分を編集して記事本文を作成してください.
+\`Front Matter\` 以下の本文を含めた自動生成された部分は削除して構いません.
+自動生成にならい,\`Front Matter\` 以下に1行改行を加え、markdown形式で記載してください
+
+## 新規投稿と記事の更新
+
+\`Front Matter\` の \`id\` の値はQiitaに投稿した記事のidの値です。
+\`id\`を空欄にした場合は新規投稿としてQiitaに投稿されます。
+既に\`id\`が入力されている場合、Qiitaのその\`id\`の値の記事を更新する投稿が行われます。
+※ 既に\`id\`が入力されている場合、 \`id\` の値は変更しないでください。
 
 ## 記事へのタグ付け
 
-フロント・マターのtagsに以下のように配列形式でtagを記載することが可能です.
+\`Front Matter\` の \`tags\` に以下のように配列形式で \`tag\` を記載することが可能です.
 投稿するには、一つ以上のtagが設定されている必要があります.
-フロント・マターへのtag追記例
+\`Front Matter\` への\`tag\`追記例
 \`\`\`
-tags: [{"name":"C++","versions":[]},{"name":"AtCoder","versions":[]}]
+tags:
+  - name: C++
+  - name: AtCoder
 \`\`\`
 `;
     const article = new Article(articlePath);
