@@ -18,15 +18,10 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     console.log(
       'aricleディレクトリのある作業ディレクトリでコマンド実行している前提での処理です.'
     );
-    console.log(
-      'articleディレクトリ内の not_uploaded.md ファイルが投稿候補記事として認識されます\n\n'
-    );
     const uploadFiles: Set<string> = await buildWillUploadFilePathSet(options);
     if (uploadFiles.size <= 0) {
       console.log(
-        '\n' +
-          emoji.get('disappointed') +
-          ' There are no "not_uploaded.md" files\n'
+        '\n' + emoji.get('disappointed') + ' ファイルが見つかりませんでした\n'
       );
       console.log(emoji.get('hatched_chick') + ' 処理を中止しました\n');
       return 1;
