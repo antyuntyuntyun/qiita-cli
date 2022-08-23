@@ -1,5 +1,6 @@
 import fs from 'fs';
 import fg from 'fast-glob';
+import path from 'path';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
 import { QiitaPost } from '~/types/qiita';
@@ -100,5 +101,12 @@ export class Article {
     const saveMarkdownFile = matter.stringify(body, matterProperty);
     // write frontMatter
     return fs.promises.writeFile(this.filePath, saveMarkdownFile);
+  }
+
+  renameFile(newFilePath: string): Promise<void> {
+    fs.mkdirSync(path.dirname(newFilePath), { recursive: true });
+    const promise = fs.promises.rename(this.filePath, newFilePath);
+    this.filePath = newFilePath;
+    return promise;
   }
 }
