@@ -31,7 +31,11 @@ export async function newArticle(options: ExtraInputOptions): Promise<number> {
     // Qiitaのidっぽいランダムな文字列を生成
     const newArticleFileName = randomBytes(10).toString('hex');
     // 記事のタイトルを基にフォルダ/ファイル作成
-    const articlePath = path.join(articleBaseDir, articleTitle, `${newArticleFileName}.md`);
+    const articlePath = path.join(
+      articleBaseDir,
+      articleTitle,
+      `${newArticleFileName}.md`
+    );
     if (fs.existsSync(articlePath)) {
       console.log(
         '\n' +
