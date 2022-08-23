@@ -33,7 +33,7 @@ export async function accessTokenInitialize(): Promise<number> {
     }
 
     console.log(
-      'Qiiaの管理者画面にてアクセストークンを発行し、トークンをcliに入力してください\n'
+      'Qiitaの管理者画面にてアクセストークンを発行し、トークンを入力してください\n'
     );
     await sleep(1500);
     // 1.5 seconds later

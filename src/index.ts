@@ -10,18 +10,11 @@ import { ExtraInputOptions } from '~/types/command';
 
 const mainUsage = `Command:
 qiita init                    qiitaとの接続設定. 初回のみ実行
-qiita pull:article            既に投稿している記事をローカルにpull(強制上書き)
+qiita pull:article            既に投稿されている記事をローカルにpullする
 qiita new:article             新しい記事を追加
 qiita post:article            ローカルの記事を投稿
-qiita delete:article(未実装)   選択した記事の削除
-qiita sync(未実装)             ローカルで作成/修正した記事の一括反映および投稿済み記事の取得
 qiita --version, -v           qiita-cliのバージョンを表示
 qiita --help, -h              ヘルプ
-
-Remark:
-コマンドは全て作業フォルダのルートでの実行を想定したものになっています.
-記事の取得・投稿は作業フォルダはコマンド実行場所の作業フォルダ内の${defaultProjectName}フォルダを基準に実行されます.
-(${defaultProjectName}フォルダはqiita init や qiit pull コマンドで生成されます)
 `;
 
 /**
@@ -52,7 +45,7 @@ program
 
 program
   .command('pull:article')
-  .description('既に投稿している記事をローカルにpull(強制上書き)')
+  .description('既に投稿されている記事をローカルにpullする')
   .option(
     '-t, --token <accessToken>',
     'Qiitaで発行したaccessTokenを入力してください'
