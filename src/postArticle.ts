@@ -1,4 +1,5 @@
 import emoji from 'node-emoji';
+import path from 'path';
 import { prompt, QuestionCollection } from 'inquirer';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
 import { ExtraInputOptions } from '~/types/command';
@@ -50,6 +51,14 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
               '\n'
           );
           writeFilePromises.push(article.writeFileFromQiitaPost(res.data));
+          if (options.overwrite) {
+            const articlePath = path.join(
+              options.project,
+              res.data.title,
+              `${res.data.id}.md`
+            );
+            writeFilePromises.push(article.renameFile(articlePath));
+          }
         } else {
           // 記事投稿失敗
           console.log(
