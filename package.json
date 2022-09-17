@@ -15,7 +15,7 @@
     "format": "prettier --config .prettierrc --write \"src/**/*.{ts,js}\""
   },
   "author": "antyuntyun",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
