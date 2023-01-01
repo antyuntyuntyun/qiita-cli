@@ -53,6 +53,7 @@
     "gray-matter": "^4.0.3",
     "inquirer": "^8.0.0",
     "open": "^8.0.7",
+    "server-destroy": "^1.0.1",
     "sleep-promise": "^9.1.0"
   },
   "commitlint": {
