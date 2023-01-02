@@ -108,7 +108,7 @@ export async function postArticle(
 }
 
 async function buildWillUploadFilePathSet(
-  options: ExtraInputOptions
+  options: PostArticleInputOptions
 ): Promise<Set<string>> {
   const uploadFiles: Set<string> = new Set<string>();
   if (options.all) {
