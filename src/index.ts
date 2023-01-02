@@ -46,7 +46,7 @@ program
   .command('init')
   .description('qiitaとの接続設定. 初回のみ実行')
   .option(
-    '-m, --mode <mode>',
+    '-m, --method <method>',
     `accessTokenの取得方法を${AccessTokenMethod.oauth}または${AccessTokenMethod.input}のどちらかを指定してください。(default: ${AccessTokenMethod.oauth})`,
     AccessTokenMethod.oauth.toString()
   )

@@ -11,7 +11,7 @@ export async function accessTokenInitialize(
   try {
     const filePath = initializeAndLoadQiitaDir();
     let token = '';
-    if (options.mode === AccessTokenMethod.oauth) {
+    if (options.method === AccessTokenMethod.oauth) {
       token = await oauthLogin();
     } else {
       token = await inputAccessToken();

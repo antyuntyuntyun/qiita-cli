@@ -8,7 +8,7 @@ export enum AccessTokenMethod {
 }
 
 export interface InitInputOptions {
-  mode: AccessTokenMethod;
+  method: AccessTokenMethod;
 }
 
 interface ProjectSettingInputOptions {
