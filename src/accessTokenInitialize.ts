@@ -16,6 +16,10 @@ export async function accessTokenInitialize(
     } else {
       token = await inputAccessToken();
     }
+    if (!token) {
+      console.error('アクセストークンを取得できませんでした');
+      return -1;
+    }
     const res = await loadAuthenticatedUser(token);
     const qiitaUser = {
       id: res.data.id,
