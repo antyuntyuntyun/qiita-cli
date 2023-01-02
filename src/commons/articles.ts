@@ -3,8 +3,8 @@ import fg from 'fast-glob';
 import path from 'path';
 import matter, { GrayMatterFile } from 'gray-matter';
 import { createHash } from 'crypto';
-import { QiitaPost } from '~/types/qiita';
-import { ArticleProperty } from '~/types/article';
+import { QiitaPost } from '@/types/qiita';
+import { ArticleProperty } from '@/types/article';
 
 export function loadArticleFiles(rootDir: string): string[] {
   return fg.sync([rootDir, '**', '*.md'].join('/'), { dot: true });

@@ -1,62 +1,26 @@
-import axios from 'axios';
+import { AxiosError } from 'axios';
 import fs from 'fs';
 import emoji from 'node-emoji';
-import open from 'open';
-import { Answers, prompt, QuestionCollection } from 'inquirer';
-import sleep from 'sleep-promise';
-import { User } from '@/types/qiita';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
 import { loadAuthenticatedUser } from './commons/qiitaApis';
+import { oauthLogin, inputAccessToken } from './commons/accessTokenManager';
+import { InitInputOptions } from '@/types/command';
 
-export async function accessTokenInitialize(): Promise<number> {
+export async function accessTokenInitialize(
+  options: InitInputOptions
+): Promise<number> {
   try {
     const filePath = initializeAndLoadQiitaDir();
-    if (fs.existsSync(filePath)) {
-      // ユーザ入出力形式指定
-      const inputYesNoBoolQuestions: QuestionCollection = [
-        {
-          type: 'confirm',
-          message:
-            '設定ファイルが既に存在します。設定が上書きされますが、よろしいですか？: ',
-          name: 'yesNoBool',
-        },
-      ];
-      const answers: Answers | { yesNoBool: boolean } = await prompt(
-        inputYesNoBoolQuestions
-      );
-      if (!answers.yesNoBool) {
-        console.log(
-          '\n' + emoji.get('hatched_chick') + ' 処理を中止しました\n'
-        );
-        return 0;
-      }
+    let token = '';
+    if (options.method === 'oauth') {
+      token = await oauthLogin();
+    } else {
+      token = await inputAccessToken();
     }
-
-    console.log(
-      'Qiitaの管理者画面にてアクセストークンを発行し、トークンを入力してください\n'
-    );
-    await sleep(1500);
-    // 1.5 seconds later
-    // open qiita admin by web default web browser
-    await open('https://qiita.com/settings/applications');
-
-    // ユーザ入出力形式指定
-    const inputTokenQuestions: QuestionCollection = [
-      {
-        type: 'input',
-        message: 'Qiita AccessToken: ',
-        name: 'token',
-      },
-    ];
-
-    // ユーザ入力(prompt())
-    // TODO: 入力されるアクセストークンをシェル上で非表示にする
-    const answers: Answers | { token: string } = await prompt(
-      inputTokenQuestions
-    );
-    // const token = JSON.stringify(answers, null, '  ');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const token: string = answers.token;
+    if (!token) {
+      console.error('アクセストークンを取得できませんでした');
+      return -1;
+    }
     const res = await loadAuthenticatedUser(token);
     const qiitaUser = {
       id: res.data.id,
@@ -84,7 +48,14 @@ export async function accessTokenInitialize(): Promise<number> {
     console.error(
       '\n' + red + 'error in get Qiita access token initialize: ' + reset + '\n'
     );
-    console.error(e);
+    if (e.isAxiosError) {
+      const axiosError = e as AxiosError;
+      console.error(
+        `status:${axiosError.response?.status} message:${axiosError.message}`
+      );
+    } else {
+      console.error(`message:${e.message}`);
+    }
     return -1;
   }
   return 1;
