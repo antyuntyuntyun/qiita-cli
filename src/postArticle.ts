@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import emoji from 'node-emoji';
 import path from 'path';
 import { prompt, QuestionCollection } from 'inquirer';
@@ -101,7 +102,14 @@ export async function postArticle(
     const red = '\u001b[31m';
     const reset = '\u001b[0m';
     console.error('\n' + red + 'error in create new article: ' + reset + '\n');
-    console.error(e);
+    if (e.isAxiosError) {
+      const axiosError = e as AxiosError;
+      console.error(
+        `status:${axiosError.response?.status} message:${axiosError.message}`
+      );
+    } else {
+      console.error(`message:${e.message}`);
+    }
     return -1;
   }
   return 1;
