@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import fs from 'fs';
 import emoji from 'node-emoji';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
@@ -47,7 +48,14 @@ export async function accessTokenInitialize(
     console.error(
       '\n' + red + 'error in get Qiita access token initialize: ' + reset + '\n'
     );
-    console.error(e);
+    if (e.isAxiosError) {
+      const axiosError = e as AxiosError;
+      console.error(
+        `status:${axiosError.response?.status} message:${axiosError.message}`
+      );
+    } else {
+      console.error(`message:${e.message}`);
+    }
     return -1;
   }
   return 1;

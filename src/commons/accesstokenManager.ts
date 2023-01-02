@@ -40,7 +40,8 @@ async function recieveOauthCallbackCode(server: Server): Promise<string> {
         } else {
           reject(error);
         }
-        response.end('Logged in! You may close this page. ');
+        response.setHeader('Content-Type', 'text/plain;charset=utf-8');
+        response.end('codeの取得が完了しました。ブラウザを閉じてください');
       }
     );
   });
