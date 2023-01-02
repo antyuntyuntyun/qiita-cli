@@ -30,7 +30,7 @@ export async function pullArticle(
     const currentIdArticles: {
       [articleId: string]: Article;
     } = loadCurrentIdToArticle(options.project);
-    const authenticatedUser = await loadAuthenticatedUser(options.token);
+    const authenticatedUser = await loadAuthenticatedUser(qiitaSetting.token);
     // 公開している記事数
     const itemCount = authenticatedUser.data.items_count;
     for (let page = 1; page <= maxPageNumber; ++page) {
