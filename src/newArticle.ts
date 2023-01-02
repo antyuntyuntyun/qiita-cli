@@ -97,7 +97,7 @@ tags:
     const red = '\u001b[31m';
     const reset = '\u001b[0m';
     console.error('\n' + red + 'error in make new article: ' + reset + '\n');
-    console.error(e);
+    console.error(`message:${e.message}`);
     return -1;
   }
   return 1;
