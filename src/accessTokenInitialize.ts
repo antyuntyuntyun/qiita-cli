@@ -1,10 +1,9 @@
-import { AxiosError } from 'axios';
 import fs from 'fs';
 import emoji from 'node-emoji';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
 import { loadAuthenticatedUser } from './commons/qiitaApis';
 import { oauthLogin, inputAccessToken } from './commons/accessTokenManager';
-import { InitInputOptions, AccessTokenMethod } from '~/types/command';
+import { InitInputOptions, AccessTokenMethod } from '@/types/command';
 
 export async function accessTokenInitialize(
   options: InitInputOptions

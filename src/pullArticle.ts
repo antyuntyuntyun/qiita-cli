@@ -4,7 +4,7 @@ import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { PullArticleInputOptions } from '~/types/command';
+import { PullArticleInputOptions } from '@/types/command';
 import { loadCurrentIdToArticle, Article } from './commons/articles';
 import {
   itemsPerPage,

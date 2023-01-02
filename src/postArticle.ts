@@ -2,7 +2,7 @@ import emoji from 'node-emoji';
 import path from 'path';
 import { prompt, QuestionCollection } from 'inquirer';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { PostArticleInputOptions } from '~/types/command';
+import { PostArticleInputOptions } from '@/types/command';
 import { loadArticleFiles, calcArticleHash, Article } from './commons/articles';
 import { postItem, patchItem } from './commons/qiitaApis';
 

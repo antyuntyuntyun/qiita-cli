@@ -12,7 +12,7 @@ import {
   PullArticleInputOptions,
   PostArticleInputOptions,
   NewArticleInputOptions,
-} from '~/types/command';
+} from '@/types/command';
 
 const mainUsage = `Command:
 qiita init                    qiitaとの接続設定

@@ -5,7 +5,7 @@ import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
 import { randomBytes } from 'crypto';
 import { Article } from './commons/articles';
-import { NewArticleInputOptions } from '~/types/command';
+import { NewArticleInputOptions } from '@/types/command';
 
 export async function newArticle(
   options: NewArticleInputOptions
