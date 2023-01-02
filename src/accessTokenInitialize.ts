@@ -6,8 +6,11 @@ import sleep from 'sleep-promise';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
 import { loadAuthenticatedUser } from './commons/qiitaApis';
 import { oauthLogin } from './commons/accesstokenManager';
+import { InitInputOptions } from '~/types/command';
 
-export async function accessTokenInitialize(): Promise<number> {
+export async function accessTokenInitialize(
+  options: InitInputOptions
+): Promise<number> {
   try {
     const filePath = initializeAndLoadQiitaDir();
     if (fs.existsSync(filePath)) {
