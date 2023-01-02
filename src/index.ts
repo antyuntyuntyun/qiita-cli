@@ -7,7 +7,6 @@ import { postArticle } from './postArticle';
 import { program } from 'commander';
 import { defaultProjectName } from './commons/articles';
 import {
-  AccessTokenMethod,
   InitInputOptions,
   PullArticleInputOptions,
   PostArticleInputOptions,
@@ -47,8 +46,8 @@ program
   .description('qiitaとの接続設定. 初回のみ実行')
   .option(
     '-m, --method <method>',
-    `accessTokenの取得方法を${AccessTokenMethod.oauth}または${AccessTokenMethod.input}のどちらかを指定してください。(default: ${AccessTokenMethod.oauth})`,
-    AccessTokenMethod.oauth.toString()
+    `accessTokenの取得方法をoauthまたはinputのどちらかを指定してください。(default: AccessTokenMethod)`,
+    'oauth'
   )
   .action(async (options: InitInputOptions) => {
     await accessTokenInitialize(options);

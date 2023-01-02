@@ -3,7 +3,7 @@ import emoji from 'node-emoji';
 import { initializeAndLoadQiitaDir } from './commons/qiitaSettings';
 import { loadAuthenticatedUser } from './commons/qiitaApis';
 import { oauthLogin, inputAccessToken } from './commons/accessTokenManager';
-import { InitInputOptions, AccessTokenMethod } from '@/types/command';
+import { InitInputOptions } from '@/types/command';
 
 export async function accessTokenInitialize(
   options: InitInputOptions
@@ -11,7 +11,7 @@ export async function accessTokenInitialize(
   try {
     const filePath = initializeAndLoadQiitaDir();
     let token = '';
-    if (options.method === AccessTokenMethod.oauth) {
+    if (options.method === 'oauth') {
       token = await oauthLogin();
     } else {
       token = await inputAccessToken();

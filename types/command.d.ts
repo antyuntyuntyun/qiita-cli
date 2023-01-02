@@ -2,10 +2,7 @@ export interface commandLineArgs {
   command: string;
 }
 
-export enum AccessTokenMethod {
-  oauth,
-  input,
-}
+type AccessTokenMethod = "oauth" | "input"
 
 export interface InitInputOptions {
   method: AccessTokenMethod;
