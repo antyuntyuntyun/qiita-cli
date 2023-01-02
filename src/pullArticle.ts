@@ -1,10 +1,11 @@
+import { AxiosError } from 'axios';
 import emoji from 'node-emoji';
 import fs from 'fs';
 import path from 'path';
 // import 形式だとファイルが存在しない状態でエラーが起こるので、import形式を一旦取りやめる
 // import qiitaSetting from '../qiita.json';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { ExtraInputOptions } from '~/types/command';
+import { PullArticleInputOptions } from '@/types/command';
 import { loadCurrentIdToArticle, Article } from './commons/articles';
 import {
   itemsPerPage,
@@ -13,7 +14,9 @@ import {
   loadPostItems,
 } from './commons/qiitaApis';
 
-export async function pullArticle(options: ExtraInputOptions): Promise<number> {
+export async function pullArticle(
+  options: PullArticleInputOptions
+): Promise<number> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const qiitaSetting: { token: string } | null = options.token
@@ -28,7 +31,7 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
     const currentIdArticles: {
       [articleId: string]: Article;
     } = loadCurrentIdToArticle(options.project);
-    const authenticatedUser = await loadAuthenticatedUser(options.token);
+    const authenticatedUser = await loadAuthenticatedUser(qiitaSetting.token);
     // 公開している記事数
     const itemCount = authenticatedUser.data.items_count;
     for (let page = 1; page <= maxPageNumber; ++page) {
@@ -68,7 +71,14 @@ export async function pullArticle(options: ExtraInputOptions): Promise<number> {
     const red = '\u001b[31m';
     const reset = '\u001b[0m';
     console.error('\n' + red + 'error in get Qiita posts: ' + reset + '\n');
-    console.error(e);
+    if (e.isAxiosError) {
+      const axiosError = e as AxiosError;
+      console.error(
+        `status:${axiosError.response?.status} message:${axiosError.message}`
+      );
+    } else {
+      console.error(`message:${e.message}`);
+    }
     return -1;
   }
   return 1;

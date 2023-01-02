@@ -1,12 +1,15 @@
+import { AxiosError } from 'axios';
 import emoji from 'node-emoji';
 import path from 'path';
 import { prompt, QuestionCollection } from 'inquirer';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { ExtraInputOptions } from '~/types/command';
+import { PostArticleInputOptions } from '@/types/command';
 import { loadArticleFiles, calcArticleHash, Article } from './commons/articles';
 import { postItem, patchItem } from './commons/qiitaApis';
 
-export async function postArticle(options: ExtraInputOptions): Promise<number> {
+export async function postArticle(
+  options: PostArticleInputOptions
+): Promise<number> {
   try {
     const qiitaSetting: { token: string } | null = options.token
       ? { token: options.token }
@@ -99,14 +102,21 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
     const red = '\u001b[31m';
     const reset = '\u001b[0m';
     console.error('\n' + red + 'error in create new article: ' + reset + '\n');
-    console.error(e);
+    if (e.isAxiosError) {
+      const axiosError = e as AxiosError;
+      console.error(
+        `status:${axiosError.response?.status} message:${axiosError.message}`
+      );
+    } else {
+      console.error(`message:${e.message}`);
+    }
     return -1;
   }
   return 1;
 }
 
 async function buildWillUploadFilePathSet(
-  options: ExtraInputOptions
+  options: PostArticleInputOptions
 ): Promise<Set<string>> {
   const uploadFiles: Set<string> = new Set<string>();
   if (options.all) {

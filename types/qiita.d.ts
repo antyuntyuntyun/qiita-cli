@@ -49,3 +49,9 @@ export interface Group {
   updated_at: string,
   url_name: string,
 }
+
+export interface AccessToken {
+  client_id: string,
+  scopes: string[],
+  token: string
+}

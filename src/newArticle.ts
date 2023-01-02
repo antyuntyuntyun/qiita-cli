@@ -5,9 +5,11 @@ import { Answers, prompt, QuestionCollection } from 'inquirer';
 import path from 'path';
 import { randomBytes } from 'crypto';
 import { Article } from './commons/articles';
-import { ExtraInputOptions } from '~/types/command';
+import { NewArticleInputOptions } from '@/types/command';
 
-export async function newArticle(options: ExtraInputOptions): Promise<number> {
+export async function newArticle(
+  options: NewArticleInputOptions
+): Promise<number> {
   try {
     console.log('Qiita 記事新規作成\n');
 
@@ -95,7 +97,7 @@ tags:
     const red = '\u001b[31m';
     const reset = '\u001b[0m';
     console.error('\n' + red + 'error in make new article: ' + reset + '\n');
-    console.error(e);
+    console.error(`message:${e.message}`);
     return -1;
   }
   return 1;
