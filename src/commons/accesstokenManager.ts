@@ -4,6 +4,8 @@ import { ReadonlyDeep } from 'type-fest';
 import crypto from 'crypto';
 import { getAccessToken } from './qiitaApis';
 import open from 'open';
+import { Answers, prompt, QuestionCollection } from 'inquirer';
+import sleep from 'sleep-promise';
 
 const qiitaOauthClientTokens = {
   clientId: '7aca58a519a2d1cb83d8117d5d7a8210a3c2cd53',
@@ -65,4 +67,27 @@ export async function oauthLogin(): Promise<string> {
     authCode
   );
   return accessTokenResponse.data.token;
+}
+
+export async function inputAccessToken(): Promise<string> {
+  console.log(
+    'Qiitaの管理者画面にてアクセストークンを発行し、トークンを入力してください\n'
+  );
+  await sleep(1500);
+  await open('https://qiita.com/settings/applications');
+  // ユーザ入出力形式指定
+  const inputTokenQuestions: QuestionCollection = [
+    {
+      type: 'input',
+      message: 'Qiita AccessToken: ',
+      name: 'token',
+    },
+  ];
+
+  // ユーザ入力(prompt())
+  const answers: Answers | { token: string } = await prompt(
+    inputTokenQuestions
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  return answers.token.toString();
 }
