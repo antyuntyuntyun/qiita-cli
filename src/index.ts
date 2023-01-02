@@ -6,10 +6,15 @@ import packageJson from '../package.json';
 import { postArticle } from './postArticle';
 import { program } from 'commander';
 import { defaultProjectName } from './commons/articles';
-import { ExtraInputOptions } from '~/types/command';
+import {
+  InitInputOptions,
+  PullArticleInputOptions,
+  PostArticleInputOptions,
+  NewArticleInputOptions,
+} from '@/types/command';
 
 const mainUsage = `Command:
-qiita init                    qiitaとの接続設定. 初回のみ実行
+qiita init                    qiitaとの接続設定
 qiita pull:article            既に投稿されている記事をローカルにpullする
 qiita new:article             新しい記事を追加
 qiita post:article            ローカルの記事を投稿
@@ -39,8 +44,13 @@ program.helpOption('-h, --help', 'ヘルプ');
 program
   .command('init')
   .description('qiitaとの接続設定. 初回のみ実行')
-  .action(async () => {
-    await accessTokenInitialize();
+  .option(
+    '-m, --method <method>',
+    `accessTokenの取得方法をoauthまたはinputのどちらかを指定してください。(default: AccessTokenMethod)`,
+    'oauth'
+  )
+  .action(async (options: InitInputOptions) => {
+    await accessTokenInitialize(options);
   });
 
 program
@@ -55,7 +65,7 @@ program
     `記事の取得・投稿を行うための作業ディレクトリの場所を指定してください。(default: ${defaultProjectName})`,
     defaultProjectName
   )
-  .action(async (options: ExtraInputOptions) => {
+  .action(async (options: PullArticleInputOptions) => {
     await pullArticle(options);
   });
 
@@ -68,7 +78,7 @@ program
     defaultProjectName
   )
   .option('-s, --simplify', `入力事項が省略されて新しい記事が作成されます`)
-  .action(async (options: ExtraInputOptions) => {
+  .action(async (options: NewArticleInputOptions) => {
     await newArticle(options);
   });
 
@@ -94,7 +104,7 @@ program
   )
   .option('--all', `プロジェクト以下に存在する全ての記事を投稿する`)
   .option('--tweet', `新規投稿時にtwitterにも一緒に投稿する`)
-  .action(async (options: ExtraInputOptions) => {
+  .action(async (options: PostArticleInputOptions) => {
     await postArticle(options);
   });
 

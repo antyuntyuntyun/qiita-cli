@@ -2,11 +2,13 @@ import emoji from 'node-emoji';
 import path from 'path';
 import { prompt, QuestionCollection } from 'inquirer';
 import { loadInitializedAccessToken } from './commons/qiitaSettings';
-import { ExtraInputOptions } from '~/types/command';
+import { PostArticleInputOptions } from '@/types/command';
 import { loadArticleFiles, calcArticleHash, Article } from './commons/articles';
 import { postItem, patchItem } from './commons/qiitaApis';
 
-export async function postArticle(options: ExtraInputOptions): Promise<number> {
+export async function postArticle(
+  options: PostArticleInputOptions
+): Promise<number> {
   try {
     const qiitaSetting: { token: string } | null = options.token
       ? { token: options.token }
@@ -106,7 +108,7 @@ export async function postArticle(options: ExtraInputOptions): Promise<number> {
 }
 
 async function buildWillUploadFilePathSet(
-  options: ExtraInputOptions
+  options: PostArticleInputOptions
 ): Promise<Set<string>> {
   const uploadFiles: Set<string> = new Set<string>();
   if (options.all) {
