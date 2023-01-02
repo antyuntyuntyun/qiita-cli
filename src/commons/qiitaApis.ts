@@ -1,9 +1,21 @@
 import axios, { AxiosResponse } from 'axios';
-import { QiitaPost, User } from '@/types/qiita';
+import { QiitaPost, User, AccessToken } from '@/types/qiita';
 import { ArticleProperty } from '@/types/article';
 
 export const itemsPerPage = 100;
 export const maxPageNumber = 100;
+
+export async function getAccessToken(
+  clientId: string,
+  clientSecret: string,
+  code: string
+): Promise<AxiosResponse<AccessToken>> {
+  return axios.post('https://qiita.com/api/v2/access_tokens', {
+    client_id: clientId,
+    client_secret: clientSecret,
+    code: code,
+  });
+}
 
 export async function loadAuthenticatedUser(
   token: string
